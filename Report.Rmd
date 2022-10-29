@@ -9,6 +9,7 @@ require(rstan)
 require(tidyverse)
 require(rstanarm)
 require(magrittr)
+library(corrplot)
 ```
 
 ```{r load-data, message = FALSE}
@@ -18,14 +19,26 @@ data_test<-read_csv("data/data-test.csv")
 
 ## Introduction
 
-```{r}
-lm.fit <- lm(R_moment_1 ~ St+ Re+invlogit(Fr), data = data_train)
-summary(lm.fit)
-```
 
 ## Methodology
 
+After loading the data, we performed exploratory data analysis on all three predictors and four moments:
+
+We found that the moments are highly correlated:
+
+```{r}
+res<-cor(data_train)
+res
+corrplot(res, tl.col ="black")
+```
+
 We used an inverse-logit function to transform `Fr` due to the infinity values that exist in the data.
+
+```{r}
+
+lm.fit <- lm(R_moment_1 ~ St+ Re+St*Re+invlogit(Fr), data = data_train)
+summary(lm.fit)
+```
 
 ## Results
 
