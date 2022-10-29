@@ -38,10 +38,15 @@ And that they are linearly correlated:
 pairs(data_train[4:7], cex = 0.5, pch = 19)
 ```
 
+```{r}
+data_train <- data_train %>%
+  mutate(Re_category = case_when(Re == 90 ~ "Low", Re==224 ~ "Medium", Re == 398 ~ "High"))%>%
+  mutate(Fr_transformed = invlogit(Fr))
+```
+
 We used an inverse-logit function to transform `Fr` due to the infinity values that exist in the data.
 
 ```{r}
-
 lm.fit <- lm(R_moment_1 ~ St+ Re+St*Re+invlogit(Fr), data = data_train)
 summary(lm.fit)
 ```
