@@ -16,6 +16,30 @@ data_train<-read_csv("data/data-train.csv")
 data_test<-read_csv("data/data-test.csv")
 ```
 
+## EDA
+
+```{r}
+plot(data_train$R_moment_1, data_train$R_moment_2)
+plot(data_train$R_moment_1, data_train$R_moment_3)
+plot(data_train$R_moment_1, data_train$R_moment_4)
+plot(data_train$R_moment_2, data_train$R_moment_3)
+plot(data_train$R_moment_2, data_train$R_moment_4)
+plot(data_train$R_moment_3, data_train$R_moment_4)
+```
+
+```{r}
+#plot(data_train[1], data_train[2])
+?cor
+```
+
+```{r}
+# St, Re, Fr
+plot(data_train$St, data_train$Re)
+plot(data_train$St, data_train$Fr)
+plot(data_train$Re, data_train$Fr)
+```
+
+
 ## Introduction
 
 ```{r}
