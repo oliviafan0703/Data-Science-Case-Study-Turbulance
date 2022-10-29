@@ -1,0 +1,20 @@
+---
+title: "Case Study Report"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: pdf_document
+---
+
+```{r setup, message=F, warning=F, echo=F}
+require(rstan)
+require(tidyverse)
+require(rstanarm)
+require(magrittr)
+```
+
+## Introduction
+
+## Methodology
+
+## Results
+
+## Conclusion
