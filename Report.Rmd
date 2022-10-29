@@ -11,7 +11,17 @@ require(rstanarm)
 require(magrittr)
 ```
 
+```{r load-data, message = FALSE}
+data_train<-read_csv("data/data-train.csv")
+data_test<-read_csv("data/data-test.csv")
+```
+
 ## Introduction
+
+```{r}
+lm.fit <- lm(R_moment_1 ~ St+ Re, data = data_train)
+summary(lm.fit)
+```
 
 ## Methodology
 
