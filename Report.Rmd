@@ -10,11 +10,16 @@ require(tidyverse)
 require(rstanarm)
 require(magrittr)
 library(corrplot)
+library(caret)
 ```
 
 ```{r load-data, message = FALSE}
 data_train<-read_csv("data/data-train.csv")
 data_test<-read_csv("data/data-test.csv")
+```
+
+```{r}
+set.seed(2000)
 ```
 
 ## Introduction
@@ -46,8 +51,24 @@ data_train <- data_train %>%
 
 We used an inverse-logit function to transform `Fr` due to the infinity values that exist in the data.
 
+
 ```{r}
-lm.fit <- lm(R_moment_1 ~ St+ Re+St*Re+invlogit(Fr), data = data_train)
+ctrl <- trainControl(method = "cv", number = 5)
+
+#fit a regression model and use k-fold CV to evaluate performance
+model <- train(R_moment_1 ~ St + Re_category + Fr_transformed, data = data_train, method = "lm", trControl = ctrl)
+
+#view summary of k-fold CV               
+print(model)
+```
+
+```{r}
+?train
+```
+
+
+```{r}
+lm.fit <- lm(R_moment_1 ~ St + Re_category + Fr_transformed, data = data_train)
 summary(lm.fit)
 ```
 
