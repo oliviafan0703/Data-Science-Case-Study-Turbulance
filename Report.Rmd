@@ -22,21 +22,19 @@ data_test<-read_csv("data/data-test.csv")
 
 ## Methodology
 
-After loading the data, we performed exploratory data analysis on all three predictors and four moments:
+### EDA 
 
-We found that the moments are highly correlated:
+After loading the data, we performed exploratory data analysis on all three predictors and four moments.
 
-```{r}
-res<-cor(data_train)
-res
-corrplot(res, tl.col ="black")
-```
-
-And that they are linearly correlated:
+We first noted that the predictor variables `Re` is clustered at fixed values, with `Re` clustering at 90, 224 and 398 (3 levels).
 
 ```{r}
-pairs(data_train[4:7], cex = 0.5, pch = 19)
+summary(data_train$St)
+summary(data_train$Re)
+summary(data_train$Fr)
 ```
+
+Moreover, we noticed that the gravitational acceleration has infinite values, which is problematic. Therefore, we used inverse logit transform on `Fr` to transform the infinity value into a finite value (Inf transformed to 1):
 
 ```{r}
 data_train <- data_train %>%
@@ -44,7 +42,21 @@ data_train <- data_train %>%
   mutate(Fr_transformed = invlogit(Fr))
 ```
 
-We used an inverse-logit function to transform `Fr` due to the infinity values that exist in the data.
+We found that the moments are not only highly correlated,
+
+```{r}
+res<-cor(data_train)
+res
+corrplot(res, tl.col ="black")
+```
+
+but that they are linearly correlated:
+
+```{r}
+pairs(data_train[4:7], cex = 0.5, pch = 19)
+```
+
+Therefore, we decided to fit a model on `R_moment_1`, which will give us the relationship of the predictor variables on the other moments due to the high linear correlation between the moments.
 
 ```{r}
 lm.fit <- lm(R_moment_1 ~ St+ Re+St*Re+invlogit(Fr), data = data_train)
