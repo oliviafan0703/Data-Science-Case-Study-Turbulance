@@ -43,11 +43,13 @@ plot(data_train$Re, data_train$Fr)
 ## Introduction
 
 ```{r}
-lm.fit <- lm(R_moment_1 ~ St+ Re, data = data_train)
+lm.fit <- lm(R_moment_1 ~ St+ Re+invlogit(Fr), data = data_train)
 summary(lm.fit)
 ```
 
 ## Methodology
+
+We used an inverse-logit function to transform `Fr` due to the infinity values that exist in the data.
 
 ## Results
 
