@@ -115,10 +115,10 @@ predict(out, type = 'coefficients', s = best_lambda)
 The ridge regression we fitted through cross-validation gives us an MSE of 0.001498519
 
 ```{r}
-lm.fit <- lm(R_moment_1 ~ St+ Re_category+Fr_transformed+Fr_transformed*Re_category+St*Re_category, data = data_train)
-lm_summary<-summary(lm.fit)
-lm_mse <-mean(lm_summary$residual^2)
-final_model<-lm.fit
+lm.fit_M1 <- lm(R_moment_1 ~ St+ Re_category+Fr_transformed+Fr_transformed*Re_category+St*Re_category, data = data_train)
+lm_summary_M1<-summary(lm.fit_M1)
+lm_mse <-mean(lm_summary_M1$residual^2)
+final_model_M1<-lm.fit_M1
 lm_mse
 ```
 
@@ -126,13 +126,38 @@ By fitting a simple linear regression and adding interaction terms, we obtained 
 
 ```{r}
 library(jtools) # Load jtools
-summ(lm.fit)
+summ(final_model_M1)
+```
+
+We fitted models on the same model to predict second, third and fourth moments due to the collinearity as explained above:
+
+```{r}
+data_train <- data_train %>%
+  mutate(Fr_category = case_when(Fr == 0.052 ~ "Low", Fr == 0.3 ~ "Medium", Fr == Inf ~ "High"))
+
+final_model_M2 <- lm(R_moment_2 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
+final_model_M3 <- lm(R_moment_2 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
+final_model_M4 <- lm(R_moment_2 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
+summ(final_model_M2)
+summ(final_model_M3)
+summ(final_model_M4)
 ```
 
 ## Results
+We made predictions on the hold-out set in data-test.csv, and generated a csv file containing the predictions for the first, second, third and fourth moments.
 
-```{r}
+```{r, warning=FALSE}
+data_test_transformed <- data_test %>%
+  mutate(Re_category = case_when(Re == 90 ~ "Low", Re==224 ~ "Medium", Re == 398 ~ "High"))%>%
+  mutate(Fr_transformed = invlogit(Fr))%>%
+  mutate(Fr_category = case_when(Fr == 0.052 ~ "Low", Fr == 0.3 ~ "Medium", Fr == Inf ~ "High"))%>%
+  mutate(Predicted_M1 = predict(final_model_M1, .))%>%
+  mutate(Predicted_M2 = predict(final_model_M2, .))%>%
+  mutate(Predicted_M3 = predict(final_model_M3, .))%>%
+  mutate(Predicted_M4 = predict(final_model_M4, .))
 
+data_predicted_output <- data_test_transformed%>%select(St, Re, Fr, Predicted_M1, Predicted_M2, Predicted_M3, Predicted_M4)
+write.csv(data_predicted_output,"data-predict.csv", row.names = FALSE)
 ```
 
 ## Conclusion
