@@ -1,7 +1,9 @@
 ---
 title: "Case Study Report"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
-output: pdf_document
+output:
+  html_document:
+    df_print: paged
 ---
 
 ```{r setup, message=F, warning=F, echo=F}
@@ -22,6 +24,15 @@ data_test<-read_csv("data/data-test.csv")
 ```
 
 ## Introduction
+The objective of this case study is to develop a predictive model to predict the distributions of particle clusters in turbulence from three predictors: fluid turbulence characterized by Reynold's number $Re$, gravitational acceleration $Fr$, and particle characteristics (size or density which is quantified by Stoke's number $St$).
+
+Developing an understanding of turbulence is important because the effects of turbulence are present in a wide variety of problems. For example, the distribution of ash in the atmosphere is controlled by atmospheric turbulence, which has many implications for the environment and aviation. Turbulence also controls the population dynamics of planktons, which play an important role in the carbon cycle. On a more cosmological and atmospheric level, turbulence plays a central part in the dispersion of ash in the atmosphere which has many implications for the environment and aviation as well
+as the thermodynamics of clouds, radiative properties, and the rate at which droplets grow to form rain. 
+The model we have decided to use to predict turbulence is a linear regression with all three variables and interaction terms, shown below:
+
+$St+ Re_{category} +Fr_{transformed} +Fr_{transformed} \times Re_{category}+St \times Re_{category}$
+
+where $Re_{category}$ is a categorical variable that classifies the training $Re$ into three categories ($Re = 90$ : Low, $Re = 224$ : Medium, $Re = 398$ : High) and $Fr_{transformed}$ is the inverse logit of $Fr$ to handle infinity values present in the data. The model includes interactions between gravitational acceleration and fluid turbulence, and between fluid turbulence and particle characteristics.
 
 
 ## Methodology
@@ -155,6 +166,8 @@ print(M2_cv)
 print(M3_cv)
 print(M4_cv)
 ```
+
+
 ```{r}
 library(knitr)
 M1_metrics <- M1_cv$results %>% select(c("RMSE", "Rsquared", "MAE"))
