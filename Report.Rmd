@@ -1,7 +1,9 @@
 ---
 title: "Case Study Report"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
-output: pdf_document
+output:
+  html_document:
+    df_print: paged
 ---
 
 ```{r setup, message=F, warning=F, echo=F}
@@ -13,6 +15,7 @@ library(corrplot)
 library(glmnet)
 require(CRAN)
 library(knitr)
+library(caret)
 ```
 
 ```{r load-data, message = FALSE}
@@ -21,6 +24,15 @@ data_test<-read_csv("data/data-test.csv")
 ```
 
 ## Introduction
+The objective of this case study is to develop a predictive model to predict the distributions of particle clusters in turbulence from three predictors: fluid turbulence characterized by Reynold's number $Re$, gravitational acceleration $Fr$, and particle characteristics (size or density which is quantified by Stoke's number $St$).
+
+Developing an understanding of turbulence is important because the effects of turbulence are present in a wide variety of problems. For example, the distribution of ash in the atmosphere is controlled by atmospheric turbulence, which has many implications for the environment and aviation. Turbulence also controls the population dynamics of planktons, which play an important role in the carbon cycle. On a more cosmological and atmospheric level, turbulence plays a central part in the dispersion of ash in the atmosphere which has many implications for the environment and aviation as well
+as the thermodynamics of clouds, radiative properties, and the rate at which droplets grow to form rain. 
+The model we have decided to use to predict turbulence is a linear regression with all three variables and interaction terms, shown below:
+
+$St+ Re_{category} +Fr_{transformed} +Fr_{transformed} \times Re_{category}+St \times Re_{category}$
+
+where $Re_{category}$ is a categorical variable that classifies the training $Re$ into three categories ($Re = 90$ : Low, $Re = 224$ : Medium, $Re = 398$ : High) and $Fr_{transformed}$ is the inverse logit of $Fr$ to handle infinity values present in the data. The model includes interactions between gravitational acceleration and fluid turbulence, and between fluid turbulence and particle characteristics.
 
 
 ## Methodology
@@ -107,11 +119,6 @@ mse <- mean((ridge.pred - y.test)^2)
 mse
 ```
 
-```{r}
-out <- glmnet(x, y, alpha = 0)
-predict(out, type = 'coefficients', s = best_lambda)
-```
-
 The ridge regression we fitted through cross-validation gives us an MSE of 0.001498519
 
 ```{r}
@@ -143,6 +150,39 @@ summ(final_model_M3)
 summ(final_model_M4)
 ```
 
+Here we perform a 5-fold cross validation on the model.
+```{r}
+train.control <- trainControl(method = "cv", number = 5)
+
+M1_cv <- train(R_moment_1 ~ St+ Re_category+Fr_transformed+Fr_transformed*Re_category+St*Re_category, data = data_train, method = "lm", trControl = train.control)
+print(M1_cv)
+```
+
+```{r, warning=FALSE}
+M2_cv <- train(R_moment_2 ~ St+Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train, method = "lm", trControl = train.control)
+M3_cv <- train(R_moment_3 ~ St+Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train, method = "lm", trControl = train.control)
+M4_cv <- train(R_moment_4 ~ St+Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train, method = "lm", trControl = train.control)
+print(M2_cv)
+print(M3_cv)
+print(M4_cv)
+```
+
+
+```{r}
+library(knitr)
+M1_metrics <- M1_cv$results %>% select(c("RMSE", "Rsquared", "MAE"))
+M2_metrics <- M2_cv$results %>% select(c("RMSE", "Rsquared", "MAE"))
+M3_metrics <- M3_cv$results %>% select(c("RMSE", "Rsquared", "MAE"))
+M4_metrics <- M4_cv$results %>% select(c("RMSE", "Rsquared", "MAE"))
+
+cv_df <- merge(M1_metrics, M2_metrics, by=c("RMSE", "Rsquared", "MAE"), all = TRUE)
+cv_df2 <- merge(cv_df, M3_metrics, by=c("RMSE", "Rsquared", "MAE"), all = TRUE)
+total_cv <- merge(cv_df2, M4_metrics, by=c("RMSE", "Rsquared", "MAE"), all = TRUE)
+total_cv <- total_cv %>% mutate(Model = c('M1', 'M2', 'M3', 'M4')) %>% relocate(Model, .before = RMSE)
+total_cv %>% kable(digits = 3)
+
+```
+
 ## Results
 We made predictions on the hold-out set in data-test.csv, and generated a csv file containing the predictions for the first, second, third and fourth moments.
 
@@ -158,8 +198,18 @@ data_test_transformed <- data_test %>%
                          
 data_predicted_output <- data_test_transformed%>%select(St, Re, Fr, Predicted_M1, Predicted_M2, Predicted_M3, Predicted_M4)
 write.csv(data_predicted_output,"data-predict.csv", row.names = FALSE)
+data_predicted_output %>% kable(digits = 5)
 ```
 
+Major observations from the results:
+
+- 
+
+results section discussing your predictive results (don’t forget uncertainty!), as
+well as insights on the scientific problem.
+
 ## Conclusion
+
+
 
 
