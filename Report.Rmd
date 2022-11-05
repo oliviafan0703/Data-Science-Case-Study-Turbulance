@@ -64,6 +64,30 @@ pairs(data_train[4:7], cex = 0.5, pch = 19)
 ```
 Therefore, we decided to fit a model on `R_moment_1`, which will give us the relationship of the predictor variables on the other moments due to the high linear correlation between the moments.
 
+```{r}
+library(gridExtra)
+p1 <- ggplot(data = data_train, mapping = aes(x = St, y = R_moment_1)) + 
+     geom_point() + labs(title = "St and Raw 1st Moment")
+p2 <- ggplot(data = data_train, mapping = aes(x = St, y = R_moment_2)) + 
+     geom_point() + labs(title = "St and Raw 2nd Moment")
+p3 <- ggplot(data = data_train, mapping = aes(x = St, y = R_moment_3)) + 
+     geom_point() + labs(title = "St and Raw 3rd Moment")
+p4 <- ggplot(data = data_train, mapping = aes(x = St, y = R_moment_4)) + 
+     geom_point() + labs(title = "St and Raw 4th Moment")
+grid.arrange(p1, p2, p3, p4, nrow = 2)
+```
+```{r}
+p5 <- ggplot(data = data_train, mapping = aes(x = Re, y = R_moment_1)) + 
+     geom_point() + labs(title = "Re and Raw 1st Moment")
+p6 <- ggplot(data = data_train, mapping = aes(x = Re, y = R_moment_2)) + 
+     geom_point() + labs(title = "Re and Raw 2nd Moment")
+p7 <- ggplot(data = data_train, mapping = aes(x = Re, y = R_moment_3)) + 
+     geom_point() + labs(title = "Re and Raw 3rd Moment")
+p8 <- ggplot(data = data_train, mapping = aes(x = Re, y = R_moment_4)) + 
+     geom_point() + labs(title = "Re and Raw 4th Moment")
+grid.arrange(p5, p6, p7, p8, nrow = 2)
+```
+
 Moreover, we noticed that the gravitational acceleration has infinite values, which is problematic. Therefore, we used inverse logit transform on `Fr` to transform the infinity value into a finite value (Inf transformed to 1):
 
 ```{r}
@@ -72,99 +96,165 @@ data_train <- data_train %>%
   mutate(Fr_transformed = invlogit(Fr))
 ```
 
+```{r}
+p9 <- ggplot(data = data_train, mapping = aes(x = Fr, y = R_moment_1)) + 
+     geom_point() + labs(title = "Fr and Raw 1st Moment")
+p10 <- ggplot(data = data_train, mapping = aes(x = Fr, y = R_moment_2)) + 
+     geom_point() + labs(title = "Fr and Raw 2nd Moment")
+p11 <- ggplot(data = data_train, mapping = aes(x = Fr, y = R_moment_3)) + 
+     geom_point() + labs(title = "Fr and Raw 3rd Moment")
+p12 <- ggplot(data = data_train, mapping = aes(x = Fr, y = R_moment_4)) + 
+     geom_point() + labs(title = "Fr and Raw 4th Moment")
+grid.arrange(p9, p10, p11, p12, nrow = 2)
+```
+In order to have better intepretation from the perspective of statistical inference, we convert raw moments to central moments. The first central moment is always 0, so we don't need to convert it.
+```{r}
+data_train <- data_train %>% mutate(C_moment_2 = R_moment_2 - R_moment_1^2, 
+                                    C_moment_3 = R_moment_3 - 3*R_moment_1*R_moment_2 + 2*(R_moment_1^3), 
+                                    C_moment_4 = R_moment_4 - 4*R_moment_1*R_moment_3 + 6*(R_moment_1^2)*R_moment_2 - 3*(R_moment_1^4))
+```
+
 We then explored shrinkage methods such as ridge regression and lasso. However, since we know that the three predictors are all active so that we do not need predictor selection, so we attempted to fit a ridge regression model: 
 
 
 ### Ridge Model
 
+We first build ridge models for the 2nd, 3rd, and 4th central moments.
 ```{r}
-y <- data_train$R_moment_1
-x <- data.matrix(data_train[, c('Re', 'St', 'Fr_transformed')])
+data_train <- data_train %>%
+  mutate(Fr_category = case_when(Fr == 0.052 ~ "Low", Fr == 0.3 ~ "Medium", Fr == Inf ~ "High"))
+```
+
+
+```{r}
+x <- data.matrix(data_train[, c('Re_category', 'St', 'Fr_category')])
 ```
 
 ```{r}
-set.seed(123)
-sample <- sample(c(TRUE, FALSE), nrow(data_train), replace=TRUE)
+set.seed(123456)
+
 train <- sample(1:nrow(x), nrow(x)/2)
 test <- (-train)
-y.test <- y[test]
+lambda_seq = 10^seq(10, -2, length = 100)
 ```
 
 ```{r}
+y2 <- data_train$C_moment_2
+ridge2 <- glmnet(x[train, ], y2[train], alpha = 0, lambda = lambda_seq)
+y2.test = y2[test]
+```
 
-lambda_seq = 10^seq(10, -2, length = 100)
+```{r}
+set.seed(123456)
+#perform k-fold cross-validation to find optimal lambda value
+cv_ridge2 <- cv.glmnet(x[train,], y2[train], alpha = 0, folds = 5)
+best_lambda2 <- cv_ridge2$lambda.min
+plot(cv_ridge2)
+```
 
-ridgemodel <- glmnet(x[train,], y[train], alpha = 0, lambda = lambda_seq)
+```{r}
+ridge.pred2 <- predict(ridge2, s = best_lambda2, newx = x[test,])
+rmse_c2 <- sqrt(mean((ridge.pred2 - y2.test)^2))
+```
 
-summary(ridgemodel)
+Ridge model for 3rd central moment:
+```{r}
+y3 <- data_train$C_moment_3
+```
+
+```{r}
+ridge3 <- glmnet(x[train,], y3[train], alpha = 0, lambda = lambda_seq)
 ```
 
 ```{r}
 set.seed(123)
 #perform k-fold cross-validation to find optimal lambda value
-cv_ridgemodel <- cv.glmnet(x[train,], y[train], alpha = 0)
-plot(cv_ridgemodel)
-```
-
-```{r}
-set.seed(123)
+cv_ridge3 <- cv.glmnet(x[train,], y3[train], alpha = 0, folds = 5)
 #find optimal lambda value that minimizes test MSE
-best_lambda <- cv_ridgemodel$lambda.min
-best_lambda
+best_lambda3 <- cv_ridge3$lambda.min
 ```
 
 ```{r}
-ridge.pred <- predict(ridgemodel, s = best_lambda, newx = x[test,])
-mse <- mean((ridge.pred - y.test)^2)
-mse
+y3.test <- y3[test]
+ridge.pred3 <- predict(ridge3, s = best_lambda3, newx = x[test,])
+rmse_c3 <- sqrt(mean((ridge.pred3 - y3.test)^2))
 ```
 
-The ridge regression we fitted through cross-validation gives us an MSE of 0.001498519
+Ridge model on 4th central moment:
+```{r}
+y4 <- data_train$C_moment_4
+```
 
 ```{r}
-lm.fit_M1 <- lm(R_moment_1 ~ St+ Re_category+Fr_transformed+Fr_transformed*Re_category+St*Re_category, data = data_train)
-lm_summary_M1<-summary(lm.fit_M1)
-lm_mse <-mean(lm_summary_M1$residual^2)
-final_model_M1<-lm.fit_M1
-lm_mse
+ridge4 <- glmnet(x[train,], y4[train], alpha = 0, lambda = lambda_seq)
 ```
-
-By fitting a simple linear regression and adding interaction terms, we obtained a model that has a MSE of 7.656106e-05, which is much smaller than the ridge regression MSE. Moreover, the model fits the data closely with $R^2$ value of 0.9727. Therefore, we decided to use this model as our final model:
 
 ```{r}
-library(jtools) # Load jtools
-summ(final_model_M1)
+set.seed(123456)
+#perform k-fold cross-validation to find optimal lambda value
+cv_ridge4 <- cv.glmnet(x[train,], y4[train], alpha = 0, folds = 5)
+#find optimal lambda value that minimizes test MSE
+best_lambda4 <- cv_ridge4$lambda.min
 ```
+
+```{r}
+y4.test <- y4[test]
+ridge.pred4 <- predict(ridge4, s = best_lambda4, newx = x[test,])
+rmse_c4 <- sqrt(mean((ridge.pred4 - y4.test)^2))
+```
+
+```{r}
+RidgeModel <- c("C_M2", "C_M3", "C_M4")
+RMSE <- c(rmse_c2, rmse_c3, rmse_c4)
+
+ridgedf <- data.frame(RidgeModel, RMSE) %>% kable()
+
+print(ridgedf)
+```
+
+The coefficients predicted by ridge:
+```{r}
+ridge.test2 <- glmnet(x, y2, alpha = 0)
+predict(ridge.test2, type = 'coefficients', s = best_lambda)
+```
+
+```{r}
+ridge.test3 <- glmnet(x, y3, alpha = 0)
+predict(ridge.test3, type = 'coefficients', s = best_lambda3)
+```
+
+```{r}
+ridge.test4 <- glmnet(x, y4, alpha = 0)
+predict(ridge.test4, type = 'coefficients', s = best_lambda4)
+```
+
+
+### Linear Model
+
+Since the 1st central moment is always 0, we need to predict 1st raw moment directly.
 
 We fitted models on the same model to predict second, third and fourth moments due to the collinearity as explained above:
 
 ```{r}
-data_train <- data_train %>%
-  mutate(Fr_category = case_when(Fr == 0.052 ~ "Low", Fr == 0.3 ~ "Medium", Fr == Inf ~ "High"))
-
-final_model_M2 <- lm(R_moment_2 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
-final_model_M3 <- lm(R_moment_2 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
-final_model_M4 <- lm(R_moment_2 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
+final_model_M1 <- lm(R_moment_1 ~ St+ Re_category+Fr_transformed+Fr_transformed*Re_category+St*Re_category, data = data_train)
+final_model_M2 <- lm(C_moment_2 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
+final_model_M3 <- lm(C_moment_3 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
+final_model_M4 <- lm(C_moment_4 ~ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
+summ(final_model_M1)
 summ(final_model_M2)
 summ(final_model_M3)
 summ(final_model_M4)
 ```
 
-Here we perform a 5-fold cross validation on the model.
-```{r}
-train.control <- trainControl(method = "cv", number = 5)
-
-M1_cv <- train(R_moment_1 ~ St+ Re_category+Fr_transformed+Fr_transformed*Re_category+St*Re_category, data = data_train, method = "lm", trControl = train.control)
-print(M1_cv)
-```
+Here we perform a 5-fold cross validation on the model. We chose 5 folds over 10 because the limited data available.
 
 ```{r, warning=FALSE}
-M2_cv <- train(R_moment_2 ~ St+Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train, method = "lm", trControl = train.control)
-M3_cv <- train(R_moment_3 ~ St+Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train, method = "lm", trControl = train.control)
-M4_cv <- train(R_moment_4 ~ St+Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train, method = "lm", trControl = train.control)
-print(M2_cv)
-print(M3_cv)
-print(M4_cv)
+set.seed(123456)
+train.control <- trainControl(method = "cv", number = 5)
+M1_cv <- train(R_moment_1 ~ St+ Re_category+Fr_transformed+Fr_transformed*Re_category+St*Re_category, data = data_train, method = "lm", trControl = train.control)
+M2_cv <- train(C_moment_2 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train, method = "lm", trControl = train.control)
+M3_cv <- train(C_moment_3 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train, method = "lm", trControl = train.control)
+M4_cv <- train(C_moment_4 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train, method = "lm", trControl = train.control)
 ```
 
 
@@ -178,10 +268,14 @@ M4_metrics <- M4_cv$results %>% select(c("RMSE", "Rsquared", "MAE"))
 cv_df <- merge(M1_metrics, M2_metrics, by=c("RMSE", "Rsquared", "MAE"), all = TRUE)
 cv_df2 <- merge(cv_df, M3_metrics, by=c("RMSE", "Rsquared", "MAE"), all = TRUE)
 total_cv <- merge(cv_df2, M4_metrics, by=c("RMSE", "Rsquared", "MAE"), all = TRUE)
-total_cv <- total_cv %>% mutate(Model = c('M1', 'M2', 'M3', 'M4')) %>% relocate(Model, .before = RMSE)
+total_cv <- total_cv %>% mutate(Model = c('R_M1', 'C_M2', 'C_M3', 'C_M4')) %>% relocate(Model, .before = RMSE)
 total_cv %>% kable(digits = 3)
-
 ```
+We can see that the linear model performs better than the ridge model over all, so we 'll use the linear model for prediction. 
+
+Moreover, it is simpler to interpret the inference result with the linear model. So we can also use the linear model for interpreting the relationship between variables. 
+
+
 
 ## Results
 We made predictions on the hold-out set in data-test.csv, and generated a csv file containing the predictions for the first, second, third and fourth moments.
@@ -191,19 +285,24 @@ data_test_transformed <- data_test %>%
   mutate(Re_category = case_when(Re == 90 ~ "Low", Re==224 ~ "Medium", Re == 398 ~ "High"))%>%
   mutate(Fr_transformed = invlogit(Fr))%>%
   mutate(Fr_category = case_when(Fr == 0.052 ~ "Low", Fr == 0.3 ~ "Medium", Fr == Inf ~ "High"))%>%
-  mutate(Predicted_M1 = predict(final_model_M1, .))%>%
-  mutate(Predicted_M2 = predict(final_model_M2, .))%>%
-  mutate(Predicted_M3 = predict(final_model_M3, .))%>%
-  mutate(Predicted_M4 = predict(final_model_M4, .))
+  mutate(Predicted_R_M1 = predict(final_model_M1, .))%>%
+  mutate(Predicted_C_M2 = predict(final_model_M2, .))%>%
+  mutate(Predicted_C_M3 = predict(final_model_M3, .))%>%
+  mutate(Predicted_C_M4 = predict(final_model_M4, .))%>%
+  mutate(Predicted_R_M2 = Predicted_C_M2 + (Predicted_R_M1)^2) %>%
+  mutate(Predicted_R_M3 = Predicted_C_M3 + 3*Predicted_R_M1*Predicted_R_M2 - 2*(Predicted_R_M1)^3) %>%
+  mutate(Predicted_R_M4 = Predicted_C_M4 + 4*Predicted_R_M1*Predicted_R_M3 - 6*(Predicted_R_M1)^2*Predicted_R_M2 + 3*(Predicted_R_M1)^4)
 
-data_predicted_output <- data_test_transformed%>%select(St, Re, Fr, Predicted_M1, Predicted_M2, Predicted_M3, Predicted_M4)
+data_predicted_output <- data_test_transformed%>%select(St, Re, Fr, Predicted_R_M1, Predicted_R_M2, Predicted_R_M3, Predicted_R_M4)
 write.csv(data_predicted_output,"data-predict.csv", row.names = FALSE)
 data_predicted_output %>% kable(digits = 5)
 ```
+The predicted raw 1st moement is directly predicted from the raw mean, and the other three moments are converted from predicted central moments.
+
 
 Major observations from the results:
 
-- 
+- When Re and Fr are both small, the predicted turbulence have very large variance.
 
 results section discussing your predictive results (don’t forget uncertainty!), as
 well as insights on the scientific problem.
