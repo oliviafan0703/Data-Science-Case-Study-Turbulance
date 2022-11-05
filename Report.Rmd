@@ -17,6 +17,8 @@ library(glmnet)
 require(CRAN)
 library(knitr)
 library(caret)
+library(dplyr)
+library(jtools)
 ```
 
 ```{r load-data, message = FALSE}
@@ -114,25 +116,25 @@ grid.arrange(p9, p10, p11, p12, nrow = 2)
 ```
 In order to have better intepretation from the perspective of statistical inference, we convert raw moments to central moments. The first central moment is always 0, so we don't need to convert it.
 ```{r}
-data_train <- data_train %>% mutate(C_moment_2 = R_moment_2 - R_moment_1^2, 
-                                    C_moment_3 = R_moment_3 - 3*R_moment_1*R_moment_2 + 2*(R_moment_1^3), 
-                                    C_moment_4 = R_moment_4 - 4*R_moment_1*R_moment_3 + 6*(R_moment_1^2)*R_moment_2 - 3*(R_moment_1^4))
+data_train <- data_train %>% mutate(C_moment_2 = R_moment_2 - (R_moment_1)^2, 
+                                    C_moment_3 = R_moment_3 - 3*(R_moment_1*R_moment_2) + 2*(R_moment_1)^3, 
+                                    C_moment_4 = R_moment_4 - 4*R_moment_1*R_moment_3 + 6*(R_moment_1)^2*R_moment_2 - 3*(R_moment_1)^4)
 ```
 
 We then explored shrinkage methods such as ridge regression and lasso. However, since we know that the three predictors are all active so that we do not need predictor selection, so we attempted to fit a ridge regression model: 
 
-
 ### Ridge Model
 
-We first build ridge models for the 2nd, 3rd, and 4th central moments.
+We first build ridge models for the 2nd, 3rd, and 4th central moments. We mutate each variables to be binaries. 
 ```{r}
 data_train <- data_train %>%
-  mutate(Fr_category = case_when(Fr == 0.052 ~ "Low", Fr == 0.3 ~ "Medium", Fr == Inf ~ "High"))
+  mutate(Fr_category = case_when(Fr == 0.052 ~ "Low", Fr == 0.3 ~ "Medium", Fr == Inf ~ "High")) %>% mutate(Fr_low = ifelse(Fr_category == 'Low', 1, 0)) %>% mutate(Fr_medium = ifelse(Fr_category == 'Medium', 1, 0)) %>% mutate(Fr_high = ifelse(Fr_category == 'High', 1, 0)) %>% mutate(Re_low = ifelse(Re_category == 'Low', 1, 0)) %>% mutate(Re_medium = ifelse(Re_category == 'Medium', 1, 0)) %>% mutate(Re_high = ifelse(Re_category == 'High', 1, 0))
+
 ```
 
 
 ```{r}
-x <- data.matrix(data_train[, c('Re_category', 'St', 'Fr_category')])
+x <- data.matrix(data_train[, c('Re_low', "Re_medium", 'Re_high', 'St', 'Fr_low', "Fr_medium", "Fr_high")])
 ```
 
 ```{r}
@@ -236,7 +238,7 @@ print(ridgedf)
 The coefficients predicted by ridge:
 ```{r}
 ridge.test2 <- glmnet(x, y2, alpha = 0)
-predict(ridge.test2, type = 'coefficients', s = best_lambda)
+predict(ridge.test2, type = 'coefficients', s = best_lambda2)
 ```
 
 ```{r}
@@ -250,7 +252,7 @@ predict(ridge.test4, type = 'coefficients', s = best_lambda4)
 ```
 
 
-### Linear Model
+### Linear Model (Inference)
 
 Since the 1st central moment is always 0, we need to predict 1st raw moment directly.
 
@@ -260,11 +262,13 @@ We fitted models on the same model to predict second, third and fourth moments d
 final_model_M1 <- lm(R_moment_1 ~ St+ Re_category+Fr_transformed+Fr_transformed*Re_category+St*Re_category, data = data_train)
 final_model_M2 <- lm(C_moment_2 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
 final_model_M3 <- lm(C_moment_3 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
-final_model_M4 <- lm(C_moment_4 ~ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
+final_model_M4 <- lm(C_moment_4 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
+
 summ(final_model_M1)
 summ(final_model_M2)
 summ(final_model_M3)
 summ(final_model_M4)
+
 ```
 
 Here we perform a 5-fold cross validation on the model. We chose 5 folds over 10 because of the limited data available.
@@ -279,13 +283,13 @@ M4_cv <- train(C_moment_4 ~ St+ Re_category+Fr_category+Fr_category*Re_category+
 ```
 
 
+
 ```{r}
 library(knitr)
-M1_metrics <- M1_cv$results %>% select(c("RMSE", "Rsquared", "MAE"))
-M2_metrics <- M2_cv$results %>% select(c("RMSE", "Rsquared", "MAE"))
-M3_metrics <- M3_cv$results %>% select(c("RMSE", "Rsquared", "MAE"))
-M4_metrics <- M4_cv$results %>% select(c("RMSE", "Rsquared", "MAE"))
-
+M1_metrics <- M1_cv$results[c("RMSE","Rsquared","MAE")]
+M2_metrics <- M2_cv$results[c("RMSE", "Rsquared", "MAE")]
+M3_metrics <- M3_cv$results[c("RMSE", "Rsquared", "MAE")]
+M4_metrics <- M4_cv$results[c("RMSE", "Rsquared", "MAE")]
 cv_df <- merge(M1_metrics, M2_metrics, by=c("RMSE", "Rsquared", "MAE"), all = TRUE)
 cv_df2 <- merge(cv_df, M3_metrics, by=c("RMSE", "Rsquared", "MAE"), all = TRUE)
 total_cv <- merge(cv_df2, M4_metrics, by=c("RMSE", "Rsquared", "MAE"), all = TRUE)
@@ -295,6 +299,52 @@ total_cv %>% kable(digits = 3)
 We can see that the linear model performs better than the ridge model over all, so we 'll use the linear model for prediction. 
 
 Moreover, it is simpler to interpret the inference result with the linear model. So we can also use the linear model for interpreting the relationship between variables. 
+
+### Log-Transformed Model (Prediction)
+
+We decided to log transform the response variable in order to restrict the predictions of values to positive only:
+
+```{r}
+data_train<-data_train%>%
+  mutate(log_C_moment_2=log(C_moment_2))%>%
+  mutate(log_C_moment_3=log(C_moment_3))%>%
+  mutate(log_C_moment_4=log(C_moment_4))
+```
+
+```{r}
+final_model_M1 <- lm(R_moment_1 ~ St+ Re_category+Fr_transformed+Fr_transformed*Re_category+St*Re_category, data = data_train)
+final_model_M2 <- lm(log_C_moment_2 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
+final_model_M3 <- lm(log_C_moment_3 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
+final_model_M4 <- lm(log_C_moment_4 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
+summ(final_model_M1)
+summ(final_model_M2)
+summ(final_model_M3)
+summ(final_model_M4)
+```
+
+
+
+### Log-Transformed Model (Prediction)
+
+We decided to log transform the response variable in order to restrict the predictions of values to positive only:
+
+```{r}
+data_train<-data_train%>%
+  mutate(log_C_moment_2=log(C_moment_2))%>%
+  mutate(log_C_moment_3=log(C_moment_3))%>%
+  mutate(log_C_moment_4=log(C_moment_4))
+```
+
+```{r}
+final_model_M1 <- lm(R_moment_1 ~ St+ Re_category+Fr_transformed+Fr_transformed*Re_category+St*Re_category, data = data_train)
+final_model_M2 <- lm(log_C_moment_2 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
+final_model_M3 <- lm(log_C_moment_3 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
+final_model_M4 <- lm(log_C_moment_4 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
+summ(final_model_M1)
+summ(final_model_M2)
+summ(final_model_M3)
+summ(final_model_M4)
+```
 
 
 
@@ -306,15 +356,21 @@ data_test_transformed <- data_test %>%
   mutate(Re_category = case_when(Re == 90 ~ "Low", Re==224 ~ "Medium", Re == 398 ~ "High"))%>%
   mutate(Fr_transformed = invlogit(Fr))%>%
   mutate(Fr_category = case_when(Fr == 0.052 ~ "Low", Fr == 0.3 ~ "Medium", Fr == Inf ~ "High"))%>%
-  mutate(Predicted_R_M1 = predict(final_model_M1, .))%>%
-  mutate(Predicted_C_M2 = predict(final_model_M2, .))%>%
-  mutate(Predicted_C_M3 = predict(final_model_M3, .))%>%
-  mutate(Predicted_C_M4 = predict(final_model_M4, .))%>%
+  mutate(Predicted_M1 = predict(final_model_M1, .))%>%
+  mutate(Predicted_M2 = predict(final_model_M2, .))%>%
+  mutate(Predicted_M3 = predict(final_model_M3, .))%>%
+  mutate(Predicted_M4 = predict(final_model_M4, .))
+                         
+data_predicted_output <- data_test_transformed[c("St", "Re", "Re_category", "Fr","Fr_transformed","Fr_category", "Predicted_M1", "Predicted_M2", "Predicted_M3", "Predicted_M4")]%>%
+  mutate(Predicted_R_M1 = exp(predict(final_model_M1, .)))%>%
+  mutate(Predicted_C_M2 = exp(predict(final_model_M2, .)))%>%
+  mutate(Predicted_C_M3 = exp(predict(final_model_M3, .)))%>%
+  mutate(Predicted_C_M4 = exp(predict(final_model_M4, .)))%>%
   mutate(Predicted_R_M2 = Predicted_C_M2 + (Predicted_R_M1)^2) %>%
   mutate(Predicted_R_M3 = Predicted_C_M3 + 3*Predicted_R_M1*Predicted_R_M2 - 2*(Predicted_R_M1)^3) %>%
   mutate(Predicted_R_M4 = Predicted_C_M4 + 4*Predicted_R_M1*Predicted_R_M3 - 6*(Predicted_R_M1)^2*Predicted_R_M2 + 3*(Predicted_R_M1)^4)
+data_predicted_output <- data_predicted_output[c("St", "Re", "Fr", "Predicted_R_M1", "Predicted_R_M2", "Predicted_R_M3", "Predicted_R_M4")]
 
-data_predicted_output <- data_test_transformed%>%select(St, Re, Fr, Predicted_R_M1, Predicted_R_M2, Predicted_R_M3, Predicted_R_M4)
 write.csv(data_predicted_output,"data-predict.csv", row.names = FALSE)
 data_predicted_output %>% kable(digits = 5)
 ```
