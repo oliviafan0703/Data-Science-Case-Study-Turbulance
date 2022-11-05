@@ -267,7 +267,7 @@ summ(final_model_M3)
 summ(final_model_M4)
 ```
 
-Here we perform a 5-fold cross validation on the model. We chose 5 folds over 10 because the limited data available.
+Here we perform a 5-fold cross validation on the model. We chose 5 folds over 10 because of the limited data available.
 
 ```{r, warning=FALSE}
 set.seed(123456)
@@ -330,6 +330,12 @@ well as insights on the scientific problem.
 
 ## Conclusion
 
+Since our response variables, where highly linearly correlated, we came to the conclusion that the model which best fit the 
+
+```{r}
+lm_test <- lm(C_moment_2 ~ St + Re_category + Fr_transformed, data = data_train)
+summary(lm_test)
+```
 
 
 
