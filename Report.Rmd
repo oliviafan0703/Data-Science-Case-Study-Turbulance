@@ -117,7 +117,6 @@ data_train <- data_train %>% mutate(C_moment_2 = R_moment_2 - R_moment_1^2,
 
 We then explored shrinkage methods such as ridge regression and lasso. However, since we know that the three predictors are all active so that we do not need predictor selection, so we attempted to fit a ridge regression model: 
 
-
 ### Ridge Model
 
 We first build ridge models for the 2nd, 3rd, and 4th central moments.
@@ -230,7 +229,7 @@ predict(ridge.test4, type = 'coefficients', s = best_lambda4)
 ```
 
 
-### Linear Model
+### Linear Model (Inference)
 
 Since the 1st central moment is always 0, we need to predict 1st raw moment directly.
 
@@ -277,6 +276,29 @@ We can see that the linear model performs better than the ridge model over all, 
 Moreover, it is simpler to interpret the inference result with the linear model. So we can also use the linear model for interpreting the relationship between variables. 
 
 
+### Log-Transformed Model (Prediction)
+
+We decided to log transform the response variable in order to restrict the predictions of values to positive only:
+
+```{r}
+data_train<-data_train%>%
+  mutate(log_C_moment_2=log(C_moment_2))%>%
+  mutate(log_C_moment_3=log(C_moment_3))%>%
+  mutate(log_C_moment_4=log(C_moment_4))
+```
+
+```{r}
+final_model_M1 <- lm(R_moment_1 ~ St+ Re_category+Fr_transformed+Fr_transformed*Re_category+St*Re_category, data = data_train)
+final_model_M2 <- lm(log_C_moment_2 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
+final_model_M3 <- lm(log_C_moment_3 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
+final_model_M4 <- lm(log_C_moment_4 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
+summ(final_model_M1)
+summ(final_model_M2)
+summ(final_model_M3)
+summ(final_model_M4)
+```
+
+
 
 ## Results
 We made predictions on the hold-out set in data-test.csv, and generated a csv file containing the predictions for the first, second, third and fourth moments.
@@ -292,10 +314,10 @@ data_test_transformed <- data_test %>%
   mutate(Predicted_M4 = predict(final_model_M4, .))
                          
 data_predicted_output <- data_test_transformed%>%select(St, Re, Re_category, Fr,Fr_transformed,Fr_category, Predicted_M1, Predicted_M2, Predicted_M3, Predicted_M4)%>%
-  mutate(Predicted_R_M1 = predict(final_model_M1, .))%>%
-  mutate(Predicted_C_M2 = predict(final_model_M2, .))%>%
-  mutate(Predicted_C_M3 = predict(final_model_M3, .))%>%
-  mutate(Predicted_C_M4 = predict(final_model_M4, .))%>%
+  mutate(Predicted_R_M1 = exp(predict(final_model_M1, .)))%>%
+  mutate(Predicted_C_M2 = exp(predict(final_model_M2, .)))%>%
+  mutate(Predicted_C_M3 = exp(predict(final_model_M3, .)))%>%
+  mutate(Predicted_C_M4 = exp(predict(final_model_M4, .)))%>%
   mutate(Predicted_R_M2 = Predicted_C_M2 + (Predicted_R_M1)^2) %>%
   mutate(Predicted_R_M3 = Predicted_C_M3 + 3*Predicted_R_M1*Predicted_R_M2 - 2*(Predicted_R_M1)^3) %>%
   mutate(Predicted_R_M4 = Predicted_C_M4 + 4*Predicted_R_M1*Predicted_R_M3 - 6*(Predicted_R_M1)^2*Predicted_R_M2 + 3*(Predicted_R_M1)^4)
