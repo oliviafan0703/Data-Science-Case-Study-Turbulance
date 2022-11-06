@@ -19,6 +19,13 @@ library(knitr)
 library(caret)
 library(dplyr)
 library(jtools)
+library(sjPlot)
+library(sjmisc)
+library(gridExtra)
+```
+
+```{r include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 ```
 
 ```{r load-data, message = FALSE, echo=F}
@@ -28,9 +35,13 @@ data_test<-read_csv("data/data-test.csv")
 
 ## Introduction
 
-The objective of this case study is to develop a predictive model to predict the distributions of particle clusters in turbulence from three predictors: fluid turbulence characterized by Reynold's number $Re$, gravitational acceleration $Fr$, and particle characteristics (size or density which is quantified by Stoke's number $St$).
+The objective of this case study is to develop a predictive model to predict the distributions of particle clusters in turbulence from three predictors: fluid turbulence characterized by Reynold's number $Re$, gravitational acceleration $Fr$, and particle characteristics (size or density which is quantified by Stokes number $St$). We also want to understand how does each of the three parameters affect the distribution of particle cluster volumns. 
 
-Developing an understanding of turbulence is important because the effects of turbulence are present in a wide variety of problems. For example, the distribution of ash in the atmosphere is controlled by atmospheric turbulence, which has many implications for the environment and aviation. Turbulence also controls the population dynamics of planktons, which play an important role in the carbon cycle. On a more cosmological and atmospheric level, turbulence plays a central part in the dispersion of ash in the atmosphere which has many implications for the environment and aviation as well as the thermodynamics of clouds, radiative properties, and the rate at which droplets grow to form rain. The model we have decided to use to predict turbulence is a linear regression with all three variables and interaction terms, shown below:
+Developing an understanding of turbulence is important because the effects of turbulence are present in a wide variety of problems. For example, the distribution of ash in the atmosphere is controlled by atmospheric turbulence, which has many implications for the environment and aviation. Turbulence also controls the population dynamics of plankton, which play an important role in the carbon cycle. On a more cosmological and atmospheric level, turbulence plays a central part in the dispersion of ash in the atmosphere which has many implications for the environment and aviation as well as the thermodynamics of clouds, radioactive properties, and the rate at which droplets grow to form rain. 
+
+We'll build a supervised machine learning model to give prediction on the complex physical phenomenon, and interpret the variables' relationship. We first conducted several necessary transformation on the variables. After trying several methods, we decided to use a linear model with interaction terms, and we performed 5-folds cross validation on the linear model to assure that our model has good predicting ability. 
+
+The model we have decided to use to predict turbulence is a linear regression with all three variables and interaction terms, shown below:
 
 $St+ Re_{category} +Fr_{transformed} +Fr_{transformed} \times Re_{category}+St \times Re_{category}$
 
@@ -42,82 +53,36 @@ where $Re_{category}$ is a categorical variable that classifies the training $Re
 
 After loading the data, we performed exploratory data analysis on all three predictors and four moments.
 
-We first noted that the predictor variables `Re` is clustered at fixed values, with `Re` clustering at 90, 224 and 398 (3 levels).
 
-```{r, echo=F, message=F, warning = F}
-St_summary <- tibble(min=min(data_train$St), Q1=quantile(data_train$St, 0.25), median=median(data_train$St),mean=mean(data_train$St),Q3=quantile(data_train$St, 0.75),max=max(data_train$St))
-St_summary%>%kable(digits=3,caption="St summary statistics")
-Re_summary <- tibble(min=min(data_train$Re), Q1=quantile(data_train$Re, 0.25), median=median(data_train$Re),mean=mean(data_train$Re),Q3=quantile(data_train$Re, 0.75),max=max(data_train$Re))
-Re_summary%>%kable(digits=3,caption="Re summary statistics")
-Fr_summary <- tibble(min=min(data_train$Fr), Q1=quantile(data_train$Fr, 0.25), median=median(data_train$Fr),mean=mean(data_train$Fr),Q3=quantile(data_train$Fr, 0.75),max=max(data_train$Fr))
-Fr_summary%>%kable(digits=3,caption="Fr summary statistics")
+```{r, fig.width=6, fig.height=3}
+p1 <- ggplot(data = data_train, mapping = aes(x = Fr)) + 
+  geom_histogram() + labs(title = "Distribution of Fr")
+
+p2 <- ggplot(data = data_train, mapping = aes(x = St)) + 
+  geom_histogram() + labs(title = "Distribution of St")
+
+p3 <- ggplot(data = data_train, mapping = aes(x = Re)) + 
+  geom_histogram() + labs(title = "Distribution of Re")
+
+grid.arrange(p1, p2, p3, nrow = 1)
 ```
+From observing the data set and the histogram plots, we can see that there are some data transformation needed. First, Fr has Inf value, which can't be quantified, so Fr only has two values in the histogram. We have two options: 1.performing logit transformation on Fr to transform Inf to 1; 2.transforming Fr to categorical variables.
 
-We found that the moments are not only highly correlated,
+We can do this because the physicist only need to predict Fr on these three levels, so we don't need to consider extrapolation. Second, Re only has three levels. We also decided to convert Re to categorical variables, because of the same reasons as Fr.
 
-```{r,echo=F}
-res<-cor(data_train)
-res%>%kable()
-```
+We also found that the moments are highly linearly correlated:
 
-```{r, echo=F, fig.width=6, fig.height=4} 
-corrplot(res, tl.col ="black")
-```
-
-but that they are linearly correlated:
-
-```{r, echo=F, fig.width=6, fig.height=4} 
+```{r, echo=F, fig.width=4, fig.height=4} 
 pairs(data_train[4:7], cex = 0.5, pch = 19)
 ```
 
-Therefore, we decided to fit a model on `R_moment_1`, which will give us the relationship of the predictor variables on the other moments due to the high linear correlation between the moments.
+It is worth-noticing that since we are trying to understand the probability distribution of the particles in the flows, we may want to look into the central moments instead of the raw moments here, because central moments give us a more meaningful interpretation of the probability distribution. However, since the 1st central moment is always 0, we need to predict 1st raw moment and other three central moments separately. Since `C_moment_2`, `C_moment_3`, and `C_moment_4` are highly linearly correlated, we decided to fit a model on `C_moment_2`, which will give us the relationship of the predictor variables on the other moments due to the high linear correlation between the moments.
 
-```{r, echo=F, fig.width=6, fig.height=4, warning=F} 
-library(gridExtra)
-p1 <- ggplot(data = data_train, mapping = aes(x = St, y = R_moment_1)) + 
-     geom_point() + labs(title = "St and Raw 1st Moment")
-p2 <- ggplot(data = data_train, mapping = aes(x = St, y = R_moment_2)) + 
-     geom_point() + labs(title = "St and Raw 2nd Moment")
-p3 <- ggplot(data = data_train, mapping = aes(x = St, y = R_moment_3)) + 
-     geom_point() + labs(title = "St and Raw 3rd Moment")
-p4 <- ggplot(data = data_train, mapping = aes(x = St, y = R_moment_4)) + 
-     geom_point() + labs(title = "St and Raw 4th Moment")
-grid.arrange(p1, p2, p3, p4, nrow = 2)
-```
-
-```{r, echo=F, fig.width=6, fig.height=4} 
-p5 <- ggplot(data = data_train, mapping = aes(x = Re, y = R_moment_1)) + 
-     geom_point() + labs(title = "Re and Raw 1st Moment")
-p6 <- ggplot(data = data_train, mapping = aes(x = Re, y = R_moment_2)) + 
-     geom_point() + labs(title = "Re and Raw 2nd Moment")
-p7 <- ggplot(data = data_train, mapping = aes(x = Re, y = R_moment_3)) + 
-     geom_point() + labs(title = "Re and Raw 3rd Moment")
-p8 <- ggplot(data = data_train, mapping = aes(x = Re, y = R_moment_4)) + 
-     geom_point() + labs(title = "Re and Raw 4th Moment")
-grid.arrange(p5, p6, p7, p8, nrow = 2)
-```
-
-Moreover, we noticed that the gravitational acceleration has infinite values, which is problematic. Therefore, we used inverse logit transform on `Fr` to transform the infinity value into a finite value (Inf transformed to 1):
-
-```{r}
+```{r, echo=FALSE}
 data_train <- data_train %>%
   mutate(Re_category = case_when(Re == 90 ~ "Low", Re==224 ~ "Medium", Re == 398 ~ "High"))%>%
   mutate(Fr_transformed = invlogit(Fr))
 ```
-
-```{r}
-p9 <- ggplot(data = data_train, mapping = aes(x = Fr, y = R_moment_1)) + 
-     geom_point() + labs(title = "Fr and Raw 1st Moment")
-p10 <- ggplot(data = data_train, mapping = aes(x = Fr, y = R_moment_2)) + 
-     geom_point() + labs(title = "Fr and Raw 2nd Moment")
-p11 <- ggplot(data = data_train, mapping = aes(x = Fr, y = R_moment_3)) + 
-     geom_point() + labs(title = "Fr and Raw 3rd Moment")
-p12 <- ggplot(data = data_train, mapping = aes(x = Fr, y = R_moment_4)) + 
-     geom_point() + labs(title = "Fr and Raw 4th Moment")
-grid.arrange(p9, p10, p11, p12, nrow = 2)
-```
-
-In order to have better intepretation from the perspective of statistical inference, we convert raw moments to central moments. The first central moment is always 0, so we don't need to convert it.
 
 ```{r, echo=F}
 data_train <- data_train %>% mutate(C_moment_2 = R_moment_2 - (R_moment_1)^2, 
@@ -125,127 +90,22 @@ data_train <- data_train %>% mutate(C_moment_2 = R_moment_2 - (R_moment_1)^2,
                                     C_moment_4 = R_moment_4 - 4*R_moment_1*R_moment_3 + 6*(R_moment_1)^2*R_moment_2 - 3*(R_moment_1)^4)
 ```
 
-We then explored shrinkage methods such as ridge regression and lasso. However, since we know that the three predictors are all active so that we do not need predictor selection, so we attempted to fit a ridge regression model.
+### Linear Model (Inference)
 
-### Ridge Model
-
-We first build ridge models for the 2nd, 3rd, and 4th central moments. We mutate each variables to be binaries.
-
-```{r}
+```{r, echo=FALSE}
 data_train <- data_train %>%
   mutate(Fr_category = case_when(Fr == 0.052 ~ "Low", Fr == 0.3 ~ "Medium", Fr == Inf ~ "High")) %>% mutate(Fr_low = ifelse(Fr_category == 'Low', 1, 0)) %>% mutate(Fr_medium = ifelse(Fr_category == 'Medium', 1, 0)) %>% mutate(Fr_high = ifelse(Fr_category == 'High', 1, 0)) %>% mutate(Re_low = ifelse(Re_category == 'Low', 1, 0)) %>% mutate(Re_medium = ifelse(Re_category == 'Medium', 1, 0)) %>% mutate(Re_high = ifelse(Re_category == 'High', 1, 0))
 
 ```
 
-```{r}
-x <- data.matrix(data_train[, c('Re_low', "Re_medium", 'Re_high', 'St', 'Fr_low', "Fr_medium", "Fr_high")])
-```
 
-```{r}
-set.seed(123456)
+We started by building a preliminary linear model: 
 
-train <- sample(1:nrow(x), nrow(x)/2)
-test <- (-train)
-lambda_seq = 10^seq(10, -2, length = 100)
-```
+$\widehat{2nd \ Central \ Moment} = \hat{St}+ \widehat{Re_{category}} +\widehat{Fr_{category}} + \epsilon$
 
-```{r}
-y2 <- data_train$C_moment_2
-ridge2 <- glmnet(x[train, ], y2[train], alpha = 0, lambda = lambda_seq)
-y2.test = y2[test]
-```
-
-```{r, fig.width=6, fig.height=4}
-set.seed(123456)
-#perform k-fold cross-validation to find optimal lambda value
-cv_ridge2 <- cv.glmnet(x[train,], y2[train], alpha = 0, folds = 5)
-best_lambda2 <- cv_ridge2$lambda.min
-plot(cv_ridge2)
-```
-
-```{r}
-ridge.pred2 <- predict(ridge2, s = best_lambda2, newx = x[test,])
-rmse_c2 <- sqrt(mean((ridge.pred2 - y2.test)^2))
-```
-
-Ridge model for 3rd central moment:
-
-```{r}
-y3 <- data_train$C_moment_3
-```
-
-```{r}
-ridge3 <- glmnet(x[train,], y3[train], alpha = 0, lambda = lambda_seq)
-```
-
-```{r}
-set.seed(123)
-#perform k-fold cross-validation to find optimal lambda value
-cv_ridge3 <- cv.glmnet(x[train,], y3[train], alpha = 0, folds = 5)
-#find optimal lambda value that minimizes test MSE
-best_lambda3 <- cv_ridge3$lambda.min
-```
-
-```{r}
-y3.test <- y3[test]
-ridge.pred3 <- predict(ridge3, s = best_lambda3, newx = x[test,])
-rmse_c3 <- sqrt(mean((ridge.pred3 - y3.test)^2))
-```
-
-Ridge model on 4th central moment:
-
-```{r}
-y4 <- data_train$C_moment_4
-```
-
-```{r}
-ridge4 <- glmnet(x[train,], y4[train], alpha = 0, lambda = lambda_seq)
-```
-
-```{r}
-set.seed(123456)
-#perform k-fold cross-validation to find optimal lambda value
-cv_ridge4 <- cv.glmnet(x[train,], y4[train], alpha = 0, folds = 5)
-#find optimal lambda value that minimizes test MSE
-best_lambda4 <- cv_ridge4$lambda.min
-```
-
-```{r}
-y4.test <- y4[test]
-ridge.pred4 <- predict(ridge4, s = best_lambda4, newx = x[test,])
-rmse_c4 <- sqrt(mean((ridge.pred4 - y4.test)^2))
-```
-
-```{r}
-RidgeModel <- c("C_M2", "C_M3", "C_M4")
-RMSE <- c(rmse_c2, rmse_c3, rmse_c4)
-
-ridgedf <- data.frame(RidgeModel, RMSE) %>% kable()
-
-print(ridgedf)
-```
-
-The coefficients predicted by ridge:
-
-```{r}
-ridge.test2 <- glmnet(x, y2, alpha = 0)
-predict(ridge.test2, type = 'coefficients', s = best_lambda2)
-```
-
-```{r}
-ridge.test3 <- glmnet(x, y3, alpha = 0)
-predict(ridge.test3, type = 'coefficients', s = best_lambda3)
-```
-
-```{r}
-ridge.test4 <- glmnet(x, y4, alpha = 0)
-predict(ridge.test4, type = 'coefficients', s = best_lambda4)
-```
-
-### Linear Model (Inference)
+We find that this basic model has very low Rsquared, so we dicided to increase the model complexity by adding interaction terms.
 
 Since the 1st central moment is always 0, we need to predict 1st raw moment directly.
-
 We fitted models on the same model to predict second, third and fourth moments due to the collinearity as explained above:
 
 ```{r}
@@ -279,10 +139,93 @@ total_cv <- total_cv %>% mutate(Model = c('R_M1', 'C_M2', 'C_M3', 'C_M4')) %>% r
 total_cv %>% kable(digits = 3)
 ```
 
-We can see that the linear model performs better than the ridge model over all, so we 'll use the linear model for prediction.
+### Ridge Model
 
-Moreover, it is simpler to interpret the inference result with the linear model. So we can also use the linear model for interpreting the relationship between variables.
+We also explored shrinkage methods such as ridge regression. We chose ridge because we don't need to perform  However, since we know that the three predictors are all active so that we do not need predictor selection, so we attempted to fit a ridge regression model.
 
+```{r, echo=FALSE}
+x <- data.matrix(data_train[, c('Re_low', "Re_medium", 'Re_high', 'St', 'Fr_low', "Fr_medium", "Fr_high")])
+```
+
+```{r,echo=FALSE}
+set.seed(123456)
+
+train <- sample(1:nrow(x), nrow(x)/2)
+test <- (-train)
+lambda_seq = 10^seq(10, -2, length = 100)
+```
+
+```{r, echo=FALSE}
+y2 <- data_train$C_moment_2
+ridge2 <- glmnet(x[train, ], y2[train], alpha = 0, lambda = lambda_seq)
+y2.test = y2[test]
+```
+
+```{r, echo=FALSE}
+set.seed(123456)
+#perform k-fold cross-validation to find optimal lambda value
+cv_ridge2 <- cv.glmnet(x[train,], y2[train], alpha = 0, folds = 5)
+best_lambda2 <- cv_ridge2$lambda.min
+```
+
+```{r, echo=FALSE}
+ridge.pred2 <- predict(ridge2, s = best_lambda2, newx = x[test,])
+rmse_c2 <- sqrt(mean((ridge.pred2 - y2.test)^2))
+```
+
+```{r, echo=FALSE}
+y3 <- data_train$C_moment_3
+
+ridge3 <- glmnet(x[train,], y3[train], alpha = 0, lambda = lambda_seq)
+```
+
+```{r, echo=FALSE}
+set.seed(123)
+#perform k-fold cross-validation to find optimal lambda value
+cv_ridge3 <- cv.glmnet(x[train,], y3[train], alpha = 0, folds = 5)
+#find optimal lambda value that minimizes test MSE
+best_lambda3 <- cv_ridge3$lambda.min
+```
+
+```{r, echo=FALSE}
+y3.test <- y3[test]
+ridge.pred3 <- predict(ridge3, s = best_lambda3, newx = x[test,])
+rmse_c3 <- sqrt(mean((ridge.pred3 - y3.test)^2))
+```
+
+
+```{r, echo=FALSE}
+y4 <- data_train$C_moment_4
+```
+
+```{r, echo=FALSE}
+ridge4 <- glmnet(x[train,], y4[train], alpha = 0, lambda = lambda_seq)
+```
+
+```{r, echo=FALSE}
+set.seed(123456)
+#perform k-fold cross-validation to find optimal lambda value
+cv_ridge4 <- cv.glmnet(x[train,], y4[train], alpha = 0, folds = 5)
+#find optimal lambda value that minimizes test MSE
+best_lambda4 <- cv_ridge4$lambda.min
+```
+
+```{r, echo=FALSE}
+y4.test <- y4[test]
+ridge.pred4 <- predict(ridge4, s = best_lambda4, newx = x[test,])
+rmse_c4 <- sqrt(mean((ridge.pred4 - y4.test)^2))
+```
+
+```{r, echo=FALSE}
+RidgeModel <- c("C_M2", "C_M3", "C_M4")
+RMSE <- c(rmse_c2, rmse_c3, rmse_c4)
+
+ridgedf <- data.frame(RidgeModel, RMSE) %>% kable()
+
+ridgedf
+```
+
+We can see that the linear model performs better than the ridge model over all, so we 'll just use the linear model for prediction. Moreover, it is simpler to interpret the inference result with the linear model. So we can also use the linear model for interpreting the relationship between variables.
 
 ### Log-Transformed Model (Final Model)
 
@@ -300,11 +243,13 @@ final_model_M1 <- lm(R_moment_1 ~ St+ Re_category+Fr_transformed+Fr_transformed*
 final_model_M2 <- lm(log_C_moment_2 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
 final_model_M3 <- lm(log_C_moment_3 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
 final_model_M4 <- lm(log_C_moment_4 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
-summ(final_model_M1)
-summ(final_model_M2)
-summ(final_model_M3)
-summ(final_model_M4)
+summary(final_model_M1)$coefficients %>% kable(digits = 3)
+summary(final_model_M2)$coefficients %>% kable(digits = 3)
+summary(final_model_M3)$coefficients %>% kable(digits = 3)
+summary(final_model_M4)$coefficients %>% kable(digits = 3)
 ```
+
+However, the ridge
 
 Then we fitted linear regression model on the original first moment response variable, and linear regression model on the log-transformed response variables for second, third and fourth moments.
 
@@ -340,6 +285,11 @@ Since the 1st central moment is always 0, we did not build a model for it. Inste
 
 The effects of three parameters are similar over other three central moments. So we'll take the 2nd central moment (variance) as a representative example. Some major observations from the results: First, Re is expected to have a negative relationship with the variance. The lower the Re, the larger the 2nd central moment. Second, St is expected to have a positive relationship with the 2nd central moment. Third, while Fr has a negative relationship with the variance, such negative effect is small when Fr number is high, and lower Fr number has stronger negative effects on the variance. It is worth-noticing that Fr does not have a significant main effect on the variance, given its high p-value. However, Fr's effects become significant in the interaction terms. 4.The interaction terms between Re and Fr has very strong positive effects on the 2nd central moment.
 
+```{r, fig.width=3, fig.height=2}
+plot_model(final_model_M2, type = "pred", terms = c("Fr_category", "Re_category"))
+plot_model(final_model_M2, type = "pred", terms = c("St", "Re_category"))
+```
+
 Specifically, based on our modeling results, the two most significant terms are Re and the interaction between Re and Fr. Turbulence with Low Re is expected to have 3.82 unit higher variance than turbulence with High Re on average holding all else constant. The interaction between Low Re and Low Fr has strong positive effects on the variance. If the turbulence has low re and low fr, it is expected to have 13.06 unit higher variance than turbulence with Low Re and High Fr, holding all else constant. This result aligns with our prediction outcome--with 90 Re and 0.052 Fr, the distribution of particle cluster has incredibly high (419.49) variance.
 
 We can now interpret the three parameters' effect in the physical context. Since Re (the Reynolds number) quantifies fluid turbulence, we can induce that the particle cluster volume distribution in turbulence has low uncertainty when Re is low. We can conclude that Laminar flows have low Re number, because the particle distribution is more orderly, regular, predictable. On the other hand, Turbulent flows have high Re number, because high Re is associated with high variance, thus the flows are more random and irregular. 
@@ -355,6 +305,8 @@ The interaction between Re and Fr is significant in our results, so we can concl
 ## Citations
 
 https://www.sciencedirect.com/topics/engineering/stokes-number
+
 https://www.sciencedirect.com/topics/engineering/froude-number
+
 https://www.sciencedirect.com/topics/engineering/reynolds-number
 
