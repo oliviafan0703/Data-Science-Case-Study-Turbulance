@@ -2,6 +2,7 @@
 title: "Case Study Report"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
+  pdf_document: default
   html_document:
     df_print: paged
 ---
@@ -20,7 +21,7 @@ library(dplyr)
 library(jtools)
 ```
 
-```{r load-data, message = FALSE}
+```{r load-data, message = FALSE, echo=F}
 data_train<-read_csv("data/data-train.csv")
 data_test<-read_csv("data/data-test.csv")
 ```
@@ -43,29 +44,35 @@ After loading the data, we performed exploratory data analysis on all three pred
 
 We first noted that the predictor variables `Re` is clustered at fixed values, with `Re` clustering at 90, 224 and 398 (3 levels).
 
-```{r}
-summary(data_train$St)
-summary(data_train$Re)
-summary(data_train$Fr)
+```{r, echo=F, message=F, warning = F}
+St_summary <- tibble(min=min(data_train$St), Q1=quantile(data_train$St, 0.25), median=median(data_train$St),mean=mean(data_train$St),Q3=quantile(data_train$St, 0.75),max=max(data_train$St))
+St_summary%>%kable(digits=3,caption="St summary statistics")
+Re_summary <- tibble(min=min(data_train$Re), Q1=quantile(data_train$Re, 0.25), median=median(data_train$Re),mean=mean(data_train$Re),Q3=quantile(data_train$Re, 0.75),max=max(data_train$Re))
+Re_summary%>%kable(digits=3,caption="Re summary statistics")
+Fr_summary <- tibble(min=min(data_train$Fr), Q1=quantile(data_train$Fr, 0.25), median=median(data_train$Fr),mean=mean(data_train$Fr),Q3=quantile(data_train$Fr, 0.75),max=max(data_train$Fr))
+Fr_summary%>%kable(digits=3,caption="Fr summary statistics")
 ```
 
 We found that the moments are not only highly correlated,
 
-```{r}
+```{r,echo=F}
 res<-cor(data_train)
-res
+res%>%kable()
+```
+
+```{r, echo=F, fig.width=6, fig.height=4} 
 corrplot(res, tl.col ="black")
 ```
 
 but that they are linearly correlated:
 
-```{r}
+```{r, echo=F, fig.width=6, fig.height=4} 
 pairs(data_train[4:7], cex = 0.5, pch = 19)
 ```
 
 Therefore, we decided to fit a model on `R_moment_1`, which will give us the relationship of the predictor variables on the other moments due to the high linear correlation between the moments.
 
-```{r}
+```{r, echo=F, fig.width=6, fig.height=4, warning=F} 
 library(gridExtra)
 p1 <- ggplot(data = data_train, mapping = aes(x = St, y = R_moment_1)) + 
      geom_point() + labs(title = "St and Raw 1st Moment")
@@ -78,7 +85,7 @@ p4 <- ggplot(data = data_train, mapping = aes(x = St, y = R_moment_4)) +
 grid.arrange(p1, p2, p3, p4, nrow = 2)
 ```
 
-```{r}
+```{r, echo=F, fig.width=6, fig.height=4} 
 p5 <- ggplot(data = data_train, mapping = aes(x = Re, y = R_moment_1)) + 
      geom_point() + labs(title = "Re and Raw 1st Moment")
 p6 <- ggplot(data = data_train, mapping = aes(x = Re, y = R_moment_2)) + 
@@ -112,7 +119,7 @@ grid.arrange(p9, p10, p11, p12, nrow = 2)
 
 In order to have better intepretation from the perspective of statistical inference, we convert raw moments to central moments. The first central moment is always 0, so we don't need to convert it.
 
-```{r}
+```{r, echo=F}
 data_train <- data_train %>% mutate(C_moment_2 = R_moment_2 - (R_moment_1)^2, 
                                     C_moment_3 = R_moment_3 - 3*(R_moment_1*R_moment_2) + 2*(R_moment_1)^3, 
                                     C_moment_4 = R_moment_4 - 4*R_moment_1*R_moment_3 + 6*(R_moment_1)^2*R_moment_2 - 3*(R_moment_1)^4)
@@ -148,7 +155,7 @@ ridge2 <- glmnet(x[train, ], y2[train], alpha = 0, lambda = lambda_seq)
 y2.test = y2[test]
 ```
 
-```{r}
+```{r, fig.width=6, fig.height=4}
 set.seed(123456)
 #perform k-fold cross-validation to find optimal lambda value
 cv_ridge2 <- cv.glmnet(x[train,], y2[train], alpha = 0, folds = 5)
@@ -250,7 +257,7 @@ final_model_M4 <- lm(C_moment_4 ~ St+ Re_category+Fr_category+Fr_category*Re_cat
 
 Here we perform a 5-fold cross validation on the model. We chose 5 folds over 10 because the limited data available.
 
-```{r, warning=FALSE}
+```{r, warning=FALSE, echo=F}
 set.seed(123456)
 train.control <- trainControl(method = "cv", number = 5)
 M1_cv <- train(R_moment_1 ~ St+ Re_category+Fr_transformed+Fr_transformed*Re_category+St*Re_category, data = data_train, method = "lm", trControl = train.control)
@@ -259,7 +266,7 @@ M3_cv <- train(C_moment_3 ~ St+ Re_category+Fr_category+Fr_category*Re_category+
 M4_cv <- train(C_moment_4 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train, method = "lm", trControl = train.control)
 ```
 
-```{r}
+```{r, echo=F}
 library(knitr)
 M1_metrics <- M1_cv$results[c("RMSE","Rsquared","MAE")]
 M2_metrics <- M2_cv$results[c("RMSE", "Rsquared", "MAE")]
@@ -276,18 +283,19 @@ We can see that the linear model performs better than the ridge model over all, 
 
 Moreover, it is simpler to interpret the inference result with the linear model. So we can also use the linear model for interpreting the relationship between variables.
 
-### Log-Transformed Model (Prediction)
 
-We decided to log transform the response variable in order to restrict the predictions of values to positive only:
+### Log-Transformed Model (Final Model)
 
-```{r}
+We decided to log transform the second, third and fourth moment response variables in order to restrict the predictions of values to positive only, since the second, third and fourth moments cannnot be negative
+
+```{r,echo=F}
 data_train<-data_train%>%
   mutate(log_C_moment_2=log(C_moment_2))%>%
   mutate(log_C_moment_3=log(C_moment_3))%>%
   mutate(log_C_moment_4=log(C_moment_4))
 ```
 
-```{r}
+```{r, echo=F}
 final_model_M1 <- lm(R_moment_1 ~ St+ Re_category+Fr_transformed+Fr_transformed*Re_category+St*Re_category, data = data_train)
 final_model_M2 <- lm(log_C_moment_2 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
 final_model_M3 <- lm(log_C_moment_3 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
@@ -298,33 +306,13 @@ summ(final_model_M3)
 summ(final_model_M4)
 ```
 
-### Log-Transformed Model (Prediction)
-
-We decided to log transform the response variable in order to restrict the predictions of values to positive only:
-
-```{r}
-data_train<-data_train%>%
-  mutate(log_C_moment_2=log(C_moment_2))%>%
-  mutate(log_C_moment_3=log(C_moment_3))%>%
-  mutate(log_C_moment_4=log(C_moment_4))
-```
-
-```{r}
-final_model_M1 <- lm(R_moment_1 ~ St+ Re_category+Fr_transformed+Fr_transformed*Re_category+St*Re_category, data = data_train)
-final_model_M2 <- lm(log_C_moment_2 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
-final_model_M3 <- lm(log_C_moment_3 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
-final_model_M4 <- lm(log_C_moment_4 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
-summ(final_model_M1)
-summ(final_model_M2)
-summ(final_model_M3)
-summ(final_model_M4)
-```
+Then we fitted linear regression model on the original first moment response variable, and linear regression model on the log-transformed response variables for second, third and fourth moments.
 
 ## Results
 
 We made predictions on the hold-out set in data-test.csv, and generated a csv file containing the predictions for the first, second, third and fourth moments.
 
-```{r, warning=FALSE}
+```{r, warning=FALSE, echo=F}
 data_test_transformed <- data_test %>%
   mutate(Re_category = case_when(Re == 90 ~ "Low", Re==224 ~ "Medium", Re == 398 ~ "High"))%>%
   mutate(Fr_transformed = invlogit(Fr))%>%
