@@ -26,20 +26,18 @@ data_test<-read_csv("data/data-test.csv")
 ```
 
 ## Introduction
+
 The objective of this case study is to develop a predictive model to predict the distributions of particle clusters in turbulence from three predictors: fluid turbulence characterized by Reynold's number $Re$, gravitational acceleration $Fr$, and particle characteristics (size or density which is quantified by Stoke's number $St$).
 
-Developing an understanding of turbulence is important because the effects of turbulence are present in a wide variety of problems. For example, the distribution of ash in the atmosphere is controlled by atmospheric turbulence, which has many implications for the environment and aviation. Turbulence also controls the population dynamics of planktons, which play an important role in the carbon cycle. On a more cosmological and atmospheric level, turbulence plays a central part in the dispersion of ash in the atmosphere which has many implications for the environment and aviation as well
-as the thermodynamics of clouds, radiative properties, and the rate at which droplets grow to form rain. 
-The model we have decided to use to predict turbulence is a linear regression with all three variables and interaction terms, shown below:
+Developing an understanding of turbulence is important because the effects of turbulence are present in a wide variety of problems. For example, the distribution of ash in the atmosphere is controlled by atmospheric turbulence, which has many implications for the environment and aviation. Turbulence also controls the population dynamics of planktons, which play an important role in the carbon cycle. On a more cosmological and atmospheric level, turbulence plays a central part in the dispersion of ash in the atmosphere which has many implications for the environment and aviation as well as the thermodynamics of clouds, radiative properties, and the rate at which droplets grow to form rain. The model we have decided to use to predict turbulence is a linear regression with all three variables and interaction terms, shown below:
 
 $St+ Re_{category} +Fr_{transformed} +Fr_{transformed} \times Re_{category}+St \times Re_{category}$
 
 where $Re_{category}$ is a categorical variable that classifies the training $Re$ into three categories ($Re = 90$ : Low, $Re = 224$ : Medium, $Re = 398$ : High) and $Fr_{transformed}$ is the inverse logit of $Fr$ to handle infinity values present in the data. The model includes interactions between gravitational acceleration and fluid turbulence, and between fluid turbulence and particle characteristics.
 
-
 ## Methodology
 
-### EDA 
+### EDA
 
 After loading the data, we performed exploratory data analysis on all three predictors and four moments.
 
@@ -64,6 +62,7 @@ but that they are linearly correlated:
 ```{r}
 pairs(data_train[4:7], cex = 0.5, pch = 19)
 ```
+
 Therefore, we decided to fit a model on `R_moment_1`, which will give us the relationship of the predictor variables on the other moments due to the high linear correlation between the moments.
 
 ```{r}
@@ -78,6 +77,7 @@ p4 <- ggplot(data = data_train, mapping = aes(x = St, y = R_moment_4)) +
      geom_point() + labs(title = "St and Raw 4th Moment")
 grid.arrange(p1, p2, p3, p4, nrow = 2)
 ```
+
 ```{r}
 p5 <- ggplot(data = data_train, mapping = aes(x = Re, y = R_moment_1)) + 
      geom_point() + labs(title = "Re and Raw 1st Moment")
@@ -109,24 +109,26 @@ p12 <- ggplot(data = data_train, mapping = aes(x = Fr, y = R_moment_4)) +
      geom_point() + labs(title = "Fr and Raw 4th Moment")
 grid.arrange(p9, p10, p11, p12, nrow = 2)
 ```
+
 In order to have better intepretation from the perspective of statistical inference, we convert raw moments to central moments. The first central moment is always 0, so we don't need to convert it.
+
 ```{r}
 data_train <- data_train %>% mutate(C_moment_2 = R_moment_2 - (R_moment_1)^2, 
                                     C_moment_3 = R_moment_3 - 3*(R_moment_1*R_moment_2) + 2*(R_moment_1)^3, 
                                     C_moment_4 = R_moment_4 - 4*R_moment_1*R_moment_3 + 6*(R_moment_1)^2*R_moment_2 - 3*(R_moment_1)^4)
 ```
 
-We then explored shrinkage methods such as ridge regression and lasso. However, since we know that the three predictors are all active so that we do not need predictor selection, so we attempted to fit a ridge regression model: 
+We then explored shrinkage methods such as ridge regression and lasso. However, since we know that the three predictors are all active so that we do not need predictor selection, so we attempted to fit a ridge regression model.
 
 ### Ridge Model
 
-We first build ridge models for the 2nd, 3rd, and 4th central moments. We mutate each variables to be binaries. 
+We first build ridge models for the 2nd, 3rd, and 4th central moments. We mutate each variables to be binaries.
+
 ```{r}
 data_train <- data_train %>%
   mutate(Fr_category = case_when(Fr == 0.052 ~ "Low", Fr == 0.3 ~ "Medium", Fr == Inf ~ "High")) %>% mutate(Fr_low = ifelse(Fr_category == 'Low', 1, 0)) %>% mutate(Fr_medium = ifelse(Fr_category == 'Medium', 1, 0)) %>% mutate(Fr_high = ifelse(Fr_category == 'High', 1, 0)) %>% mutate(Re_low = ifelse(Re_category == 'Low', 1, 0)) %>% mutate(Re_medium = ifelse(Re_category == 'Medium', 1, 0)) %>% mutate(Re_high = ifelse(Re_category == 'High', 1, 0))
 
 ```
-
 
 ```{r}
 x <- data.matrix(data_train[, c('Re_low', "Re_medium", 'Re_high', 'St', 'Fr_low', "Fr_medium", "Fr_high")])
@@ -160,6 +162,7 @@ rmse_c2 <- sqrt(mean((ridge.pred2 - y2.test)^2))
 ```
 
 Ridge model for 3rd central moment:
+
 ```{r}
 y3 <- data_train$C_moment_3
 ```
@@ -183,6 +186,7 @@ rmse_c3 <- sqrt(mean((ridge.pred3 - y3.test)^2))
 ```
 
 Ridge model on 4th central moment:
+
 ```{r}
 y4 <- data_train$C_moment_4
 ```
@@ -215,6 +219,7 @@ print(ridgedf)
 ```
 
 The coefficients predicted by ridge:
+
 ```{r}
 ridge.test2 <- glmnet(x, y2, alpha = 0)
 predict(ridge.test2, type = 'coefficients', s = best_lambda2)
@@ -230,7 +235,6 @@ ridge.test4 <- glmnet(x, y4, alpha = 0)
 predict(ridge.test4, type = 'coefficients', s = best_lambda4)
 ```
 
-
 ### Linear Model (Inference)
 
 Since the 1st central moment is always 0, we need to predict 1st raw moment directly.
@@ -242,12 +246,6 @@ final_model_M1 <- lm(R_moment_1 ~ St+ Re_category+Fr_transformed+Fr_transformed*
 final_model_M2 <- lm(C_moment_2 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
 final_model_M3 <- lm(C_moment_3 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
 final_model_M4 <- lm(C_moment_4 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
-
-summ(final_model_M1)
-summ(final_model_M2)
-summ(final_model_M3)
-summ(final_model_M4)
-
 ```
 
 Here we perform a 5-fold cross validation on the model. We chose 5 folds over 10 because the limited data available.
@@ -261,8 +259,6 @@ M3_cv <- train(C_moment_3 ~ St+ Re_category+Fr_category+Fr_category*Re_category+
 M4_cv <- train(C_moment_4 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train, method = "lm", trControl = train.control)
 ```
 
-
-
 ```{r}
 library(knitr)
 M1_metrics <- M1_cv$results[c("RMSE","Rsquared","MAE")]
@@ -275,33 +271,10 @@ total_cv <- merge(cv_df2, M4_metrics, by=c("RMSE", "Rsquared", "MAE"), all = TRU
 total_cv <- total_cv %>% mutate(Model = c('R_M1', 'C_M2', 'C_M3', 'C_M4')) %>% relocate(Model, .before = RMSE)
 total_cv %>% kable(digits = 3)
 ```
-We can see that the linear model performs better than the ridge model over all, so we 'll use the linear model for prediction. 
 
-Moreover, it is simpler to interpret the inference result with the linear model. So we can also use the linear model for interpreting the relationship between variables. 
+We can see that the linear model performs better than the ridge model over all, so we 'll use the linear model for prediction.
 
-### Log-Transformed Model (Prediction)
-
-We decided to log transform the response variable in order to restrict the predictions of values to positive only:
-
-```{r}
-data_train<-data_train%>%
-  mutate(log_C_moment_2=log(C_moment_2))%>%
-  mutate(log_C_moment_3=log(C_moment_3))%>%
-  mutate(log_C_moment_4=log(C_moment_4))
-```
-
-```{r}
-final_model_M1 <- lm(R_moment_1 ~ St+ Re_category+Fr_transformed+Fr_transformed*Re_category+St*Re_category, data = data_train)
-final_model_M2 <- lm(log_C_moment_2 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
-final_model_M3 <- lm(log_C_moment_3 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
-final_model_M4 <- lm(log_C_moment_4 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
-summ(final_model_M1)
-summ(final_model_M2)
-summ(final_model_M3)
-summ(final_model_M4)
-```
-
-
+Moreover, it is simpler to interpret the inference result with the linear model. So we can also use the linear model for interpreting the relationship between variables.
 
 ### Log-Transformed Model (Prediction)
 
@@ -325,9 +298,30 @@ summ(final_model_M3)
 summ(final_model_M4)
 ```
 
+### Log-Transformed Model (Prediction)
 
+We decided to log transform the response variable in order to restrict the predictions of values to positive only:
+
+```{r}
+data_train<-data_train%>%
+  mutate(log_C_moment_2=log(C_moment_2))%>%
+  mutate(log_C_moment_3=log(C_moment_3))%>%
+  mutate(log_C_moment_4=log(C_moment_4))
+```
+
+```{r}
+final_model_M1 <- lm(R_moment_1 ~ St+ Re_category+Fr_transformed+Fr_transformed*Re_category+St*Re_category, data = data_train)
+final_model_M2 <- lm(log_C_moment_2 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
+final_model_M3 <- lm(log_C_moment_3 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
+final_model_M4 <- lm(log_C_moment_4 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
+summ(final_model_M1)
+summ(final_model_M2)
+summ(final_model_M3)
+summ(final_model_M4)
+```
 
 ## Results
+
 We made predictions on the hold-out set in data-test.csv, and generated a csv file containing the predictions for the first, second, third and fourth moments.
 
 ```{r, warning=FALSE}
@@ -353,18 +347,26 @@ data_predicted_output <- data_predicted_output[c("St", "Re", "Fr", "Predicted_R_
 write.csv(data_predicted_output,"data-predict.csv", row.names = FALSE)
 data_predicted_output %>% kable(digits = 5)
 ```
-The predicted raw 1st moement is directly predicted from the raw mean, and the other three moments are converted from predicted central moments.
 
+Since the 1st central moment is always 0, we did not build a model for it. Instead, we directly predicts the 1st raw moment. There is a distinction between the three parameters' effects on mean and other three moments. When predicting the 1st raw moment, we did not transform Fr into categorical variables, and the interaction between Re and Fr has a significant negative, though weak, effects on the value of the mean.
 
-Major observations from the results:
+The effects of three parameters are similar over other three central moments. So we'll take the 2nd central moment (variance) as a representative example. Some major observations from the results: First, Re is expected to have a negative relationship with the variance. The lower the Re, the larger the 2nd central moment. Second, St is expected to have a positive relationship with the 2nd central moment. Third, while Fr has a negative relationship with the variance, such negative effect is small when Fr number is high, and lower Fr number has stronger negative effects on the variance. It is worth-noticing that Fr does not have a significant main effect on the variance, given its high p-value. However, Fr's effects become significant in the interaction terms. 4.The interaction terms between Re and Fr has very strong positive effects on the 2nd central moment.
 
-- When Re and Fr are both small, the predicted turbulence have very large variance.
+Specifically, based on our modeling results, the two most significant terms are Re and the interaction between Re and Fr. Turbulence with Low Re is expected to have 3.82 unit higher variance than turbulence with High Re on average holding all else constant. The interaction between Low Re and Low Fr has strong positive effects on the variance. If the turbulence has low re and low fr, it is expected to have 13.06 unit higher variance than turbulence with Low Re and High Fr, holding all else constant. This result aligns with our prediction outcome--with 90 Re and 0.052 Fr, the distribution of particle cluster has incredibly high (419.49) variance.
 
-results section discussing your predictive results (don’t forget uncertainty!), as
-well as insights on the scientific problem.
+We can now interpret the three parameters' effect in the physical context. Since Re (the Reynolds number) quantifies fluid turbulence, we can induce that the particle cluster volume distribution in turbulence has low uncertainty when Re is low. We can conclude that Laminar flows have low Re number, because the particle distribution is more orderly, regular, predictable. On the other hand, Turbulent flows have high Re number, because high Re is associated with high variance, thus the flows are more random and irregular. 
+
+St (the Stokes number) is the ratio of the particle's momentum response time to the flow-field time scale. By definition, a larger Stokes number represents a larger or heavier particle. Our results demonstrate that particles with high St have greater impact on the turbulence. For small St, the particles will mostly follow the fluid motion, thus more predictable; for high St, the carrier fluid will have very limited influence on the particle motion, thus more unpredictable. We can conclude that Turbulent flows have high St, and Laminar flows have low St.
+
+Fr (the Froud number) is the ratio of average flow velocity to the wave velocity in shallow water. So high Fr means fast rapid flow, and low Fr means slow tranquil flow. In our result, Fr in general has a negative effects on the variance, but such negative effects decreases while Fr increases. In other words, flows with high Fr is more unpredictable, and flows with low Fr is more orderly. Therefore, we can induce that Turbulent flow has high velocity, thus high Fr; Laminar flow has low velocity, thus low Fr.
+
+The interaction between Re and Fr is significant in our results, so we can conclude that Re and Fr combining contribute to the dominant effects over the flow's motion, while the St is less significant.
 
 ## Conclusion
 
+## Citations
 
-
+https://www.sciencedirect.com/topics/engineering/stokes-number
+https://www.sciencedirect.com/topics/engineering/froude-number
+https://www.sciencedirect.com/topics/engineering/reynolds-number
 
