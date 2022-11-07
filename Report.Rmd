@@ -108,7 +108,7 @@ We started by building a preliminary linear model:
 
 $\widehat{2nd \ Central \ Moment} = \hat{St}+ \widehat{Re_{category}} +\widehat{Fr_{category}} + \epsilon$
 
-We find that this basic model has very low Rsquared, so we dicided to increase the model complexity by adding interaction terms.
+We find that this basic model has very low Rsquared, so we decided to increase the model complexity by adding interaction terms.
 
 Since the 1st central moment is always 0, we need to predict 1st raw moment directly.
 We fitted models on the same model to predict second, third and fourth moments due to the collinearity as explained above:
@@ -289,7 +289,6 @@ M4_cv <- train(C_moment_4 ~ St+ Re_category+Fr_category+Fr_category*Re_category+
 ```
 
 
-
 ```{r}
 library(knitr)
 M1_metrics <- M1_cv$results[c("RMSE","Rsquared","MAE")]
@@ -376,18 +375,19 @@ We can now interpret the three parameters' effect in the physical context. Since
 
 St (the Stokes number) is the ratio of the particle's momentum response time to the flow-field time scale. By definition, a larger Stokes number represents a larger or heavier particle. Our results demonstrate that particles with high St have greater impact on the turbulence. For small St, the particles will mostly follow the fluid motion, thus more predictable; for high St, the carrier fluid will have very limited influence on the particle motion, thus more unpredictable. We can conclude that Turbulent flows have high St, and Laminar flows have low St.
 
-Fr (the Froud number) is the ratio of average flow velocity to the wave velocity in shallow water. So high Fr means fast rapid flow, and low Fr means slow tranquil flow. In our result, Fr in general has a negative effects on the variance, but such negative effects decreases while Fr increases. In other words, flows with high Fr is more unpredictable, and flows with low Fr is more orderly. Therefore, we can induce that Turbulent flow has high velocity, thus high Fr; Laminar flow has low velocity, thus low Fr.
+Fr (the Froud number) is the ratio of average flow velocity to the wave velocity in shallow water. So high Fr means fast rapid flow, and low Fr means slow tranquil flow. In our result, Fr in general has a negative effects on the variance, but such negative effects decreases while Fr increases. In other words, flows with high Fr is more unpredictable, and flows with low Fr is more orderly. Therefore, we can conclude that Turbulent flow has high velocity, thus high Fr; Laminar flow has low velocity, thus low Fr.
 
-The interaction between Re and Fr is significant in our results, so we can conclude that Re and Fr combining contribute to the dominant effects over the flow's motion, while the St is less significant.
+The interaction between Re and Fr is significant in our results, so we can conclude that Re and Fr combining in very important in affecting flow's motion, while the St is less significant.
 
 ## Conclusion
 
 Since our response variables, where highly linearly correlated, we came to the conclusion that the model which best fit the first moment would also be a good fit for the other models. We saw that after transforming Fr and Re into categorical variables, we greatly increased the Test MSE of our models. Taking the second central moment as an example, we saw some statistically significant interaction terms between Re and Fr, which, because of the hierarchy principle, means we included the order 1 terms Re_category and Fr_categrory as well. We predicted that the variance of the particle cluster would increase significantly if the gravitational acceleration and Reynold's number jointly decreased. When fitting a model only with the linear terms St, Re_category, and Fr_category, we saw that there was a statistically significant increase in the variance when the Reynold's number and gravitational acceleration decreased independently, but to a much lesser extent than with the interaction term.
 
-```{r}
-lm_test <- lm(C_moment_2 ~ St + Re_category + Fr_transformed, data = data_train)
-summary(lm_test)
-```
+In this study, we analyzed the effect of Re, Fr, and St to the distribution of particle cluster volumns. It is important to note some limitation of our results: First, we have a relatively small training dataset (<100). This might result in issues relating to generalization and data imbalance. Second, we only have three levels for Re and Fr. There will be a serious issue of bad extrapolation if we use this model to predict tuples with Re and Fr outside of these three levels. Therefore, this model is only reliable with these three levels of Re and Fr. Last but not least, although our models has high Rsquared for all 4 moments, our model is a linear model with couple interaction terms, but based on our EDA, the relationship between Fr/Re and the moments is not linear. So we think there should be more complex models that can better describe the relationship between variables, thus produce a more accurate prediction result.
+
+We believe that our model provides good prediction and on the probability distribution of particle cluster volumns, and interpretation on how Re, Fr, St affect the flows. We conclude that Turbulent flows have high St, high Re, high Fr; Laminar flows have low St, low Re, low Fr. Our results also reveal that the interaction between Re and Fr has significant effects on flows' motion. 
+
+Moreover, we think that there might be other omitted variables that affect the flow motion. We are curious about the threshold where flows transitioning from laminar to turbulent. In future study, we hope to explore other potential predictor variables and the critical point that decides flow's type. 
 
 ## Citations
 
