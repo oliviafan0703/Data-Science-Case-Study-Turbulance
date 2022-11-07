@@ -44,14 +44,17 @@ The objective of this case study is to develop a predictive model to predict the
 
 Developing an understanding of turbulence is important because the effects of turbulence are present in a wide variety of problems. For example, the distribution of ash in the atmosphere is controlled by atmospheric turbulence, which has many implications for the environment and aviation. Turbulence also controls the population dynamics of plankton, which play an important role in the carbon cycle. On a more cosmological and atmospheric level, turbulence plays a central part in the dispersion of ash in the atmosphere which has many implications for the environment and aviation as well as the thermodynamics of clouds, radioactive properties, and the rate at which droplets grow to form rain. 
 
+<<<<<<< HEAD
 We'll build a supervised machine learning model to give prediction on the complex physical phenomenon, and interpret the variables' relationship. We first conducted several necessary transformation on the variables. After trying several methods, we decided to use a linear model with interaction terms, and we performed 5-folds cross validation on the linear model to assure that our model has good predictive ability. 
+=======
+We'll build a supervised machine learning model to give prediction on the complex physical phenomenon, and interpret the variables' relationship. We first conducted several necessary transformation on the variables. After trying several methods, we decided to use a linear model with interaction terms, and we performed 5-folds cross validation on the linear model to assure that our model has good predicting ability. 
+>>>>>>> fad4d0f6b4b05b50c880cc217778c919d763bf8d
 
 ## Methodology
 
 ### EDA
 
 After loading the data, we performed exploratory data analysis on all three predictors and four moments.
-
 
 ```{r, fig.width=6, fig.height=3}
 p1 <- ggplot(data = data_train, mapping = aes(x = Fr)) + 
@@ -90,7 +93,8 @@ data_train <- data_train %>% mutate(C_moment_2 = R_moment_2 - (R_moment_1)^2,
                                     C_moment_4 = R_moment_4 - 4*R_moment_1*R_moment_3 + 6*(R_moment_1)^2*R_moment_2 - 3*(R_moment_1)^4)
 ```
 
-### Linear Model (Inference)
+
+### Preliminary Linear Model
 
 ```{r, echo=FALSE}
 data_train <- data_train %>%
@@ -98,12 +102,16 @@ data_train <- data_train %>%
 
 ```
 
-
-We started by building a preliminary linear model: 
+We started by building a preliminary linear model as the foundation: 
 
 $\widehat{2nd \ Central \ Moment} = \hat{St}+ \widehat{Re_{category}} +\widehat{Fr_{category}} + \epsilon$
 
-We find that this basic model has very low Rsquared, so we decided to increase the model complexity by adding interaction terms.
+```{r}
+model <- lm(C_moment_2 ~ St + Fr_category + Re_category, data = data_train)
+summ(model, vifs = TRUE)
+```
+
+We find that multicollinearity is not a issue here. We also find that this basic model has very low Rsquared (0.45), so we decided to increase the model complexity by adding interaction terms.
 
 Since the 1st central moment is always 0, we need to predict 1st raw moment directly.
 We fitted models on the same model to predict second, third and fourth moments due to the collinearity as explained above:
@@ -138,10 +146,6 @@ total_cv <- merge(cv_df2, M4_metrics, by=c("RMSE", "Rsquared", "MAE"), all = TRU
 total_cv <- total_cv %>% mutate(Model = c('R_M1', 'C_M2', 'C_M3', 'C_M4')) %>% relocate(Model, .before = RMSE)
 total_cv %>% kable(digits = 3)
 ```
-
-### Ridge Model
-
-We also explored shrinkage methods such as ridge regression. We chose ridge because we don't need to perform  However, since we know that the three predictors are all active so that we do not need predictor selection, so we attempted to fit a ridge regression model.
 
 ```{r, echo=FALSE}
 x <- data.matrix(data_train[, c('Re_low', "Re_medium", 'Re_high', 'St', 'Fr_low', "Fr_medium", "Fr_high")])
@@ -191,7 +195,6 @@ ridge.pred3 <- predict(ridge3, s = best_lambda3, newx = x[test,])
 rmse_c3 <- sqrt(mean((ridge.pred3 - y3.test)^2))
 ```
 
-
 ```{r, echo=FALSE}
 y4 <- data_train$C_moment_4
 ```
@@ -218,10 +221,8 @@ rmse_c4 <- sqrt(mean((ridge.pred4 - y4.test)^2))
 RidgeModel <- c("C_M2", "C_M3", "C_M4")
 RMSE <- c(rmse_c2, rmse_c3, rmse_c4)
 ridgedf <- data.frame(RidgeModel, RMSE) %>% kable()
-ridgedf
 ```
 
-We can see that the linear model performs better than the ridge model over all, so we 'll just use the linear model for prediction. Moreover, it is simpler to interpret the inference result with the linear model. So we can also use the linear model for interpreting the relationship between variables.
 
 ### Log-Transformed Model (Final Model)
 
@@ -234,17 +235,21 @@ data_train<-data_train%>%
   mutate(log_C_moment_4=log(C_moment_4))
 ```
 
-Then we fitted linear regression model on the original first moment response variable, and linear regression model on the log-transformed response variables for second, third and fourth moments.
+Then we fitted linear regression model on the original first moment response variable, and linear regression model on the log-transformed response variables for second, third and fourth moments. All models have high rsquared.
 
 ```{r, echo=F}
 final_model_M1 <- lm(R_moment_1 ~ St+ Re_category+Fr_transformed+Fr_transformed*Re_category+St*Re_category, data = data_train)
 final_model_M2 <- lm(log_C_moment_2 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
 final_model_M3 <- lm(log_C_moment_3 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
 final_model_M4 <- lm(log_C_moment_4 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
-summary(final_model_M1)$coefficients %>% kable(digits = 3)
-summary(final_model_M2)$coefficients %>% kable(digits = 3)
-summary(final_model_M3)$coefficients %>% kable(digits = 3)
-summary(final_model_M4)$coefficients %>% kable(digits = 3)
+m1_rsq <- summary(final_model_M1)$r.squared
+m2_rsq <- summary(final_model_M2)$r.squared
+m3_rsq <- summary(final_model_M3)$r.squared
+m4_rsq <- summary(final_model_M4)$r.squared
+Model <- c("R_M1", "C_M2", "C_M3", "C_M4")
+Rsq <- c(m1_rsq, m2_rsq, m3_rsq, m4_rsq)
+rsqdf <- data.frame(Model, Rsq) %>% kable()
+rsqdf
 ```
 
 The final equations are:
@@ -283,7 +288,6 @@ data_predicted_output <- data_test_transformed[c("St", "Re", "Re_category", "Fr"
 data_predicted_output <- data_predicted_output[c("St", "Re", "Fr", "Predicted_R_M1", "Predicted_R_M2", "Predicted_R_M3", "Predicted_R_M4")]
 
 write.csv(data_predicted_output,"data-predict.csv", row.names = FALSE)
-data_predicted_output %>% kable(digits = 5)
 ```
 
 Since the 1st central moment is always 0, we did not build a model for it. Instead, we directly predicts the 1st raw moment. There is a distinction between the three parameters' effects on mean and other three moments. When predicting the 1st raw moment, we did not transform Fr into categorical variables, and the interaction between Re and Fr has a significant negative, though weak, effects on the value of the mean.
@@ -322,4 +326,19 @@ https://www.sciencedirect.com/topics/engineering/stokes-number
 https://www.sciencedirect.com/topics/engineering/froude-number
 
 https://www.sciencedirect.com/topics/engineering/reynolds-number
+
+\newpage
+
+## Appendix
+
+```{r}
+summary(final_model_M1)$coefficients %>% kable(digits = 3)
+summary(final_model_M2)$coefficients %>% kable(digits = 3)
+summary(final_model_M3)$coefficients %>% kable(digits = 3)
+summary(final_model_M4)$coefficients %>% kable(digits = 3)
+```
+
+```{r}
+data_predicted_output %>% kable(digits = 5)
+```
 
