@@ -1,5 +1,6 @@
 ---
 title: "Case Study Report"
+author: "Alicia Gong", "Olivia Fan", "Jake Heller", "Annie Do"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
   pdf_document: default
@@ -108,7 +109,7 @@ model <- lm(C_moment_2 ~ St + Fr_category + Re_category, data = data_train)
 summ(model, vifs = TRUE)
 ```
 
-We find that multicollinearity is not a issue here. We also find that this basic model has very low Rsquared (0.45), so we decided to increase the model complexity by adding interaction terms.
+From the result, we can see that multicollinearity is not a issue here. We also find that low Fr and low Re have significant effects on variance. Since this basic model has very low Rsquared (0.45), so we decided to increase the model complexity by adding interaction terms, especially exploring Fr and Re. 
 
 Since the 1st central moment is always 0, we need to predict 1st raw moment directly.
 We fitted models on the same model to predict second, third and fourth moments due to the collinearity as explained above:
