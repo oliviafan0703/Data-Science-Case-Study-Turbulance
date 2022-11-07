@@ -40,17 +40,11 @@ set.seed(2000)
 
 ## Introduction
 
-The objective of this case study is to develop a predictive model to predict the distributions of particle clusters in turbulence from three predictors: fluid turbulence characterized by Reynold's number $Re$, gravitational acceleration $Fr$, and particle characteristics (size or density which is quantified by Stokes number $St$). We also want to understand how does each of the three parameters affect the distribution of particle cluster volumns. 
+The objective of this case study is to develop a predictive model to predict the distributions of particle clusters in turbulence from three predictors: fluid turbulence characterized by Reynold's number $Re$, gravitational acceleration $Fr$, and particle characteristics (size or density which is quantified by Stoke's number $St$). We also want to understand how does each of the three parameters affect the distribution of particle cluster volumns. 
 
 Developing an understanding of turbulence is important because the effects of turbulence are present in a wide variety of problems. For example, the distribution of ash in the atmosphere is controlled by atmospheric turbulence, which has many implications for the environment and aviation. Turbulence also controls the population dynamics of plankton, which play an important role in the carbon cycle. On a more cosmological and atmospheric level, turbulence plays a central part in the dispersion of ash in the atmosphere which has many implications for the environment and aviation as well as the thermodynamics of clouds, radioactive properties, and the rate at which droplets grow to form rain. 
 
-We'll build a supervised machine learning model to give prediction on the complex physical phenomenon, and interpret the variables' relationship. We first conducted several necessary transformation on the variables. After trying several methods, we decided to use a linear model with interaction terms, and we performed 5-folds cross validation on the linear model to assure that our model has good predicting ability. 
-
-The model we have decided to use to predict turbulence is a linear regression with all three variables and interaction terms, shown below:
-
-$St+ Re_{category} +Fr_{transformed} +Fr_{transformed} \times Re_{category}+St \times Re_{category}$
-
-where $Re_{category}$ is a categorical variable that classifies the training $Re$ into three categories ($Re = 90$ : Low, $Re = 224$ : Medium, $Re = 398$ : High) and $Fr_{transformed}$ is the inverse logit of $Fr$ to handle infinity values present in the data. The model includes interactions between gravitational acceleration and fluid turbulence, and between fluid turbulence and particle characteristics.
+We'll build a supervised machine learning model to give prediction on the complex physical phenomenon, and interpret the variables' relationship. We first conducted several necessary transformation on the variables. After trying several methods, we decided to use a linear model with interaction terms, and we performed 5-folds cross validation on the linear model to assure that our model has good predictive ability. 
 
 ## Methodology
 
