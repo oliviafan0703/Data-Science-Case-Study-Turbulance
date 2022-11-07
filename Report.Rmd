@@ -98,7 +98,7 @@ data_train <- data_train %>%
 
 ```
 
-We started by building a preliminary linear model as the foundation: 
+We started by building a preliminary linear model on the 2nd central moment:
 
 $\widehat{2nd \ Central \ Moment} = \hat{St}+ \widehat{Re_{category}} +\widehat{Fr_{category}} + \epsilon$
 
@@ -250,13 +250,13 @@ rsqdf
 
 The final equations are:
 
-$\widehat{R\_moment\_1}=0.122 \times \widehat{Re\_categoryLow} +0.001 \times \widehat{Re\_categoryMedium} -0.052 \times \widehat{Re\_categoryLow} * \widehat{Fr\_transformed} +0.001 \times \widehat{Re\_categoryMedium} * \widehat{Fr\_transformed} + 0.028 \times \hat{St} * \widehat{Re\_categoryLow}+0.001 \times \hat{St} * \widehat{Re\_categoryMedium} + \epsilon$
+$R\_moment\_1=0.122 \times Re\_categoryLow +0.001 \times Re\_categoryMedium -0.052 \times Re\_categoryLow * Fr\_transformed +0.001 \times Re\_categoryMedium * Fr\_transformed + 0.028 \times St * Re\_categoryLow + 0.001 \times St * Re\_categoryMedium$
 
-$\widehat{C\_moment\_2}=\exp(-5.423+0.295 \times St +3.824\times Re\_categoryLow+ 1.130\times  Re\_categoryMedium-0.229 \times \widehat{Fr\_categoryLow} -0.067 \times Fr\_categoryMedium +6.886 \times Re\_categoryLow*Fr\_categoryLow+2.175 \times Re\_categoryMedium*Fr\_categoryLow+0.269 \times Re\_categoryLow*Fr\_categoryMedium+0.684 \times St*Re\_categoryLow+0.651 \times \hat{St}*\widehat{Re\_categoryMedium} + \epsilon)$
+$C\_moment\_2 =\exp(-5.423+0.295 \times St +3.824\times Re\_categoryLow+ 1.130\times  Re\_categoryMedium-0.229 \times Fr\_categoryLow -0.067 \times Fr\_categoryMedium +6.886 \times Re\_categoryLow*Fr\_categoryLow+2.175 \times Re\_categoryMedium*Fr\_categoryLow+0.269 \times Re\_categoryLow*Fr\_categoryMedium+0.684 \times St*Re\_categoryLow+0.651 \times \hat{St}*Re\_categoryMedium)$
 
-$\hat{C\_moment\_3}=\exp(-2.474+0.315 \times St +2.874\times Re\_categoryLow+ 0.573\times  Re\_categoryMedium-0.289 \times Fr\_categoryLow-0.077 \times Fr\_categoryMedium +13.060 \times Re\_categoryLow*Fr\_categoryLow+4.303 \times Re\_categoryMedium*Fr\_categoryLow+0.307 \times Re\_categoryLow*Fr\_categoryMedium+1.116 \times St*Re\_categoryLow+1.002 \times St*Re\_categoryMedium)$
+$C\_moment\_3=\exp(-2.474+0.315 \times St +2.874\times Re\_categoryLow+ 0.573\times  Re\_categoryMedium-0.289 \times Fr\_categoryLow-0.077 \times Fr\_categoryMedium +13.060 \times Re\_categoryLow*Fr\_categoryLow+4.303 \times Re\_categoryMedium*Fr\_categoryLow+0.307 \times Re\_categoryLow*Fr\_categoryMedium+1.116 \times St*Re\_categoryLow+1.002 \times St*Re\_categoryMedium)$
 
-$\hat{C\_moment\_4}=\exp(0.475+0.335 \times St +2.102\times Re\_categoryLow+ 0.096\times  Re\_categoryMedium-0.349 \times Fr\_categoryLow-0.097 \times Fr\_categoryMedium +19.153 \times Re\_categoryLow*Fr\_categoryLow+6.421 \times Re\_categoryMedium*Fr\_categoryLow+0.348 \times Re\_categoryLow*Fr\_categoryMedium+1.488 \times St*Re\_categoryLow+1.304 \times St*Re\_categoryMedium)$
+$C\_moment\_4=\exp(0.475+0.335 \times St +2.102\times Re\_categoryLow+ 0.096\times  Re\_categoryMedium-0.349 \times Fr\_categoryLow-0.097 \times Fr\_categoryMedium +19.153 \times Re\_categoryLow*Fr\_categoryLow+6.421 \times Re\_categoryMedium*Fr\_categoryLow+0.348 \times Re\_categoryLow*Fr\_categoryMedium+1.488 \times St*Re\_categoryLow+1.304 \times St*Re\_categoryMedium)$
 
 
 ## Results
@@ -327,13 +327,14 @@ https://www.sciencedirect.com/topics/engineering/reynolds-number
 
 ## Appendix
 
+1. The regression output for models on 1st raw moment and 2nd, 3rd, 4th central moment.
 ```{r}
 summary(final_model_M1)$coefficients %>% kable(digits = 3)
 summary(final_model_M2)$coefficients %>% kable(digits = 3)
 summary(final_model_M3)$coefficients %>% kable(digits = 3)
 summary(final_model_M4)$coefficients %>% kable(digits = 3)
 ```
-
+2. The prediction output on the test data. 
 ```{r}
 data_predicted_output %>% kable(digits = 5)
 ```
