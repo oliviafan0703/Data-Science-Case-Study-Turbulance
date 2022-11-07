@@ -71,6 +71,7 @@ p3 <- ggplot(data = data_train, mapping = aes(x = Re)) +
 
 grid.arrange(p1, p2, p3, nrow = 1)
 ```
+
 From observing the data set and the histogram plots, we can see that there are some data transformation needed. First, Fr has Inf value, which can't be quantified, so Fr only has two values in the histogram. We have two options: 1.performing logit transformation on Fr to transform Inf to 1; 2.transforming Fr to categorical variables.
 
 We can do this because the physicist only need to predict Fr on these three levels, so we don't need to consider extrapolation. Second, Re only has three levels. We also decided to convert Re to categorical variables, because of the same reasons as Fr.
@@ -154,24 +155,12 @@ x <- data.matrix(data_train[, c('Re_low', "Re_medium", 'Re_high', 'St', 'Fr_low'
 
 ```{r,echo=FALSE}
 set.seed(123456)
-
 train <- sample(1:nrow(x), nrow(x)/2)
 test <- (-train)
 lambda_seq = 10^seq(10, -2, length = 100)
 ```
 
-
-```{r}
-ctrl <- trainControl(method = "cv", number = 5)
-
-#fit a regression model and use k-fold CV to evaluate performance
-model <- train(R_moment_1 ~ St + Re_category + Fr_transformed, data = data_train, method = "lm", trControl = ctrl)
-
-#view summary of k-fold CV               
-print(model)
-```
-
-```{r}
+```{r, echo=FALSE}
 y2 <- data_train$C_moment_2
 ridge2 <- glmnet(x[train, ], y2[train], alpha = 0, lambda = lambda_seq)
 y2.test = y2[test]
@@ -191,7 +180,6 @@ rmse_c2 <- sqrt(mean((ridge.pred2 - y2.test)^2))
 
 ```{r, echo=FALSE}
 y3 <- data_train$C_moment_3
-
 ridge3 <- glmnet(x[train,], y3[train], alpha = 0, lambda = lambda_seq)
 ```
 
@@ -235,72 +223,7 @@ rmse_c4 <- sqrt(mean((ridge.pred4 - y4.test)^2))
 ```{r, echo=FALSE}
 RidgeModel <- c("C_M2", "C_M3", "C_M4")
 RMSE <- c(rmse_c2, rmse_c3, rmse_c4)
-
 ridgedf <- data.frame(RidgeModel, RMSE) %>% kable()
-
-print(ridgedf)
-```
-
-The coefficients predicted by ridge:
-```{r}
-ridge.test2 <- glmnet(x, y2, alpha = 0)
-predict(ridge.test2, type = 'coefficients', s = best_lambda2)
-```
-
-```{r}
-ridge.test3 <- glmnet(x, y3, alpha = 0)
-predict(ridge.test3, type = 'coefficients', s = best_lambda3)
-```
-
-```{r}
-ridge.test4 <- glmnet(x, y4, alpha = 0)
-predict(ridge.test4, type = 'coefficients', s = best_lambda4)
-```
-
-
-### Linear Model (Inference)
-
-Since the 1st central moment is always 0, we need to predict 1st raw moment directly.
-
-We fitted models on the same model to predict second, third and fourth moments due to the collinearity as explained above:
-
-```{r}
-final_model_M1 <- lm(R_moment_1 ~ St+ Re_category+Fr_transformed+Fr_transformed*Re_category+St*Re_category, data = data_train)
-final_model_M2 <- lm(C_moment_2 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
-final_model_M3 <- lm(C_moment_3 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
-final_model_M4 <- lm(C_moment_4 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
-
-summ(final_model_M1)
-summ(final_model_M2)
-summ(final_model_M3)
-summ(final_model_M4)
-
-```
-
-Here we perform a 5-fold cross validation on the model. We chose 5 folds over 10 because of the limited data available.
-
-```{r, warning=FALSE}
-set.seed(123456)
-train.control <- trainControl(method = "cv", number = 5)
-M1_cv <- train(R_moment_1 ~ St+ Re_category+Fr_transformed+Fr_transformed*Re_category+St*Re_category, data = data_train, method = "lm", trControl = train.control)
-M2_cv <- train(C_moment_2 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train, method = "lm", trControl = train.control)
-M3_cv <- train(C_moment_3 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train, method = "lm", trControl = train.control)
-M4_cv <- train(C_moment_4 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train, method = "lm", trControl = train.control)
-```
-
-
-```{r}
-library(knitr)
-M1_metrics <- M1_cv$results[c("RMSE","Rsquared","MAE")]
-M2_metrics <- M2_cv$results[c("RMSE", "Rsquared", "MAE")]
-M3_metrics <- M3_cv$results[c("RMSE", "Rsquared", "MAE")]
-M4_metrics <- M4_cv$results[c("RMSE", "Rsquared", "MAE")]
-cv_df <- merge(M1_metrics, M2_metrics, by=c("RMSE", "Rsquared", "MAE"), all = TRUE)
-cv_df2 <- merge(cv_df, M3_metrics, by=c("RMSE", "Rsquared", "MAE"), all = TRUE)
-total_cv <- merge(cv_df2, M4_metrics, by=c("RMSE", "Rsquared", "MAE"), all = TRUE)
-total_cv <- total_cv %>% mutate(Model = c('R_M1', 'C_M2', 'C_M3', 'C_M4')) %>% relocate(Model, .before = RMSE)
-total_cv %>% kable(digits = 3)
-
 ridgedf
 ```
 
@@ -317,6 +240,8 @@ data_train<-data_train%>%
   mutate(log_C_moment_4=log(C_moment_4))
 ```
 
+Then we fitted linear regression model on the original first moment response variable, and linear regression model on the log-transformed response variables for second, third and fourth moments.
+
 ```{r, echo=F}
 final_model_M1 <- lm(R_moment_1 ~ St+ Re_category+Fr_transformed+Fr_transformed*Re_category+St*Re_category, data = data_train)
 final_model_M2 <- lm(log_C_moment_2 ~ St+ Re_category+Fr_category+Fr_category*Re_category+St*Re_category, data = data_train)
@@ -328,9 +253,16 @@ summary(final_model_M3)$coefficients %>% kable(digits = 3)
 summary(final_model_M4)$coefficients %>% kable(digits = 3)
 ```
 
-However, the ridge
+The final equations are:
 
-Then we fitted linear regression model on the original first moment response variable, and linear regression model on the log-transformed response variables for second, third and fourth moments.
+$\hat{R\_moment\_1}=0.122 \times Re\_categoryLow+0.001 \times Re\_categoryMedium -0.052 \times Re\_categoryLow * Fr\_transformed +0.001 \times Re\_categoryMedium * Fr\_transformed + 0.028 \times St * Re\_categoryLow+0.001 \times St*Re\_categoryMedium$
+
+$\hat{C\_moment\_2}=\exp(-5.423+0.295 \times St +3.824\times Re\_categoryLow+ 1.130\times  Re\_categoryMedium-0.229 \times Fr\_categoryLow-0.067 \times Fr\_categoryMedium +6.886 \times Re\_categoryLow*Fr\_categoryLow+2.175 \times Re\_categoryMedium*Fr\_categoryLow+0.269 \times Re\_categoryLow*Fr\_categoryMedium+0.684 \times St*Re\_categoryLow+0.651 \times St*Re\_categoryMedium)$
+
+$\hat{C\_moment\_3}=\exp(-2.474+0.315 \times St +2.874\times Re\_categoryLow+ 0.573\times  Re\_categoryMedium-0.289 \times Fr\_categoryLow-0.077 \times Fr\_categoryMedium +13.060 \times Re\_categoryLow*Fr\_categoryLow+4.303 \times Re\_categoryMedium*Fr\_categoryLow+0.307 \times Re\_categoryLow*Fr\_categoryMedium+1.116 \times St*Re\_categoryLow+1.002 \times St*Re\_categoryMedium)$
+
+$\hat{C\_moment\_4}=\exp(0.475+0.335 \times St +2.102\times Re\_categoryLow+ 0.096\times  Re\_categoryMedium-0.349 \times Fr\_categoryLow-0.097 \times Fr\_categoryMedium +19.153 \times Re\_categoryLow*Fr\_categoryLow+6.421 \times Re\_categoryMedium*Fr\_categoryLow+0.348 \times Re\_categoryLow*Fr\_categoryMedium+1.488 \times St*Re\_categoryLow+1.304 \times St*Re\_categoryMedium)$
+
 
 ## Results
 
