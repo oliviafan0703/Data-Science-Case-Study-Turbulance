@@ -345,7 +345,7 @@ data_predicted_output %>% kable(digits = 5)
 ```
 
 ### 1.3
-### Model Diagnostics
+### Model Diagnostics and Limitations
 
 ```{r, echo=F} 
 par(mfrow = c(2, 4))
@@ -357,11 +357,10 @@ plot(final_model_M4)
 
 We conducted model diagnostic on the final model from mainly four perspectives
 
-- Residuals vs Fitted: While 
-Used to check the linear relationship assumptions. A horizontal line, without distinct patterns is an indication for a linear relationship, what is good.
+- Residuals vs Fitted: M1 clearly demonstrates a horizontal line, with the residuals randomly scattered. For M2, M3, and M4 while the trace is not strictly a horizontal line, it is roughly horizontal with no egregiously distinct pattern of residual data points. Therefore, the linear relationship assumptions hold.
 
-- Normal Q-Q. Used to examine whether the residuals are normally distributed. It’s good if residuals points follow the straight dashed line.
+- Normal Q-Q: For M2, M3, and M4, the residual points follow the straight dashed line, with some slight deviations towards the lower theoretical quantiles. Therefore, the residuals are normally distributed. For M1, however, the residual points follow a straight line for the residuals in the middle quantiles, but deviate drastically towards the lower and upper tails. 
 
-- Scale-Location (or Spread-Location). Used to check the homogeneity of variance of the residuals (homoscedasticity). Horizontal line with equally spread points is a good indication of homoscedasticity. This is not the case in our example, where we have a heteroscedasticity problem.
+- Scale-Location: For M1, the points are equally spread which is a good indication of homoscedasticity. For M2, M3, and M4, however, some of the points are lumped together, while they are still scattered on a large scale. However, the red traceline does not seem horizontal which indicates a potential heteroscedasticity problem as the limitation of this model.
 
-- Residuals vs Leverage. Used to identify influential cases, that is extreme values that might influence the regression results when included or excluded from the analysis. This plot will be described further in the next sections.
+- Residuals vs Leverage: While there do not seem to be influential points according to Cook's distance. There do seem to be outliers with high leverage for each of the four moments M1, M2, M3 and M4 which as future work, we could investigate and conduct analysis on the underlying cause.
