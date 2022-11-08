@@ -304,8 +304,7 @@ Fr (the Froud number) is the ratio of average flow velocity to the wave velocity
 
 The interaction between Re and Fr is significant in our results, so we can conclude that Re and Fr combining is very important in affecting particles' distribution motion, while the effects of St are less significant.
 
-From the SE columns, we can see that the 1st raw moment has very small standard error and low uncertainty. The uncertainty increases as moments increases--higher order moments generally have higher uncertainty than lower order moments. This means that our prediction on the mean is the most accurate, and prediction on kurtosis is less reliable. It is worth-noticing that SE are the highest when St, Fr, Re are all high.
-
+From the SE table (Appendix 1.4), we can see that the 1st raw moment has very small standard error and low uncertainty. The uncertainty increases as moments increases--higher order moments generally have higher uncertainty than lower order moments. It is worth-noticing that SE is the highest when St, Fr, Re are all high. This indicates that our prediction is more reliable when the levels of three parameters vary. 
 
 ## Conclusion
 
