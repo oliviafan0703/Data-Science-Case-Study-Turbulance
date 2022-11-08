@@ -40,7 +40,7 @@ set.seed(2000)
 
 ## Introduction
 
-The objective of this case study is to develop a predictive model to predict the distributions of particle clusters in turbulence from three predictors: fluid turbulence characterized by Reynold's number $Re$, gravitational acceleration $Fr$, and particle characteristics (size or density which is quantified by Stoke's number $St$). We also want to understand how does each of the three parameters affect the distribution of particle cluster volumns. 
+The objective of this case study is to develop a predictive model to predict the distributions of particle clusters in turbulence from three predictors: fluid turbulence characterized by Reynold's number $Re$, gravitational acceleration $Fr$, and particle characteristics (size or density which is quantified by Stoke's number $St$). We also want to understand how each of the three parameters affects the distribution of particle cluster volumns. 
 
 Developing an understanding of turbulence is important because the effects of turbulence are present in a wide variety of problems. For example, the distribution of ash in the atmosphere is controlled by atmospheric turbulence as well as the thermodynamics of clouds, radioactive properties, and the rate at which droplets grow to form rain, which has many implications for the environment and aviation. Turbulence also controls the population dynamics of planktons, which play an important role in the carbon cycle. On a more cosmological level, turbulence also controls the dispersion of magnetism and heat from supernova events and possibly star formation.
 
