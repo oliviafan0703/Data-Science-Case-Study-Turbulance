@@ -1,5 +1,6 @@
 ---
 title: "Case Study Report"
+author: "Alicia Gong, Olivia Fan, Jake Heller, Annie Do"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
   pdf_document: default
@@ -52,7 +53,7 @@ We'll build a supervised machine learning model to give prediction on the comple
 
 After loading the data, we performed exploratory data analysis on all three predictors and four moments.
 
-```{r, fig.width=6, fig.height=3}
+```{r, fig.width=6, fig.height=2}
 p1 <- ggplot(data = data_train, mapping = aes(x = Fr)) + 
   geom_histogram() + labs(title = "Distribution of Fr")
 
@@ -259,8 +260,6 @@ $C\_moment\_4=\exp(0.475+0.335 \times St +2.102\times Re\_categoryLow+ 0.096\tim
 
 We performed model diagnostics on the generalized linear model, as discussed in Appendix 1.4.
 
-\newpage
-
 ## Results
 
 We made predictions on the hold-out set in data-test.csv, and generated a csv file containing the predictions for the first, second, third and fourth moments.
@@ -305,7 +304,7 @@ St (the Stokes number) is the ratio of the particle's momentum response time to 
 
 Fr (the Froud number) is the ratio of average flow velocity to the wave velocity in shallow water. So high Fr means fast rapid flow (turbulent), and low Fr means slow tranquil flow (laminar). In our result, Fr in general has a negative effects on the variance, but such negative effects decreases while Fr increases. In other words, higher Fr is associated with higher variance. Therefore, with low Fr, the particles distribute in a more normal, symmetric way with few outliers; with high Fr, the particles distribution has greater variance.
 
-The interaction between Re and Fr is significant in our results, so we can conclude that Re and Fr combining is very important in affecting particles' distribution motion, while the effects of St are less significant.
+The interaction between Re and Fr is significant in our results, so we can conclude that Re and Fr combining is very important in affecting particles' distribution motion, while the effects of St are less significant. When the flow is laminar, Re and Fr are both low, the probability distribution for particle cluster volumes is spread out, highly skewed, and is heavily influenced by outliers. When the flow is turbulent, the probability distribution for particle cluster volumes is fairly normal, symmetric, and with few outliers. 
 
 From the SE table (Appendix 1.3), we can see that the 1st raw moment has very small standard error and low uncertainty. The uncertainty increases as moments increases--higher order moments generally have higher uncertainty than lower order moments. It is worth-noticing that SE is the highest when St, Fr, Re are all high. This indicates that our prediction is more reliable when the levels of three parameters vary. 
 
@@ -313,11 +312,12 @@ From the SE table (Appendix 1.3), we can see that the 1st raw moment has very sm
 
 Since our response variables, where highly linearly correlated, we came to the conclusion that the model which best fit the first moment would also be a good fit for the other models. We saw that after transforming Fr and Re into categorical variables, we greatly increased the Test MSE of our models. Taking the second central moment as an example, we saw some statistically significant interaction terms between Re and Fr, which, because of the hierarchy principle, means we included the order 1 terms Re_category and Fr_categrory as well. We predicted that the variance of the particle cluster would increase significantly if the gravitational acceleration and Reynold's number jointly decreased. When fitting a model only with the linear terms St, Re_category, and Fr_category, we saw that there was a statistically significant increase in the variance when the Reynold's number and gravitational acceleration decreased independently, but to a much lesser extent than with the interaction term.
 
-In this study, we analyzed the effect of Re, Fr, and St to the distribution of particle cluster volumns. It is important to note some limitation of our results: First, we have a relatively small training dataset (<100). This might result in issues relating to generalization and data imbalance. Second, we only have three levels for Re and Fr. There will be a serious issue of bad extrapolation if we use this model to predict tuples with Re and Fr outside of these three levels. Therefore, this model is only reliable with these three levels of Re and Fr. Last but not least, although our models has high Rsquared for all 4 moments, our model is a linear model with couple interaction terms, but based on our EDA, the relationship between Fr/Re and the moments is not linear. So we think there should be more complex models that can better describe the relationship between variables, thus produce a more accurate prediction result.
+In this study, we analyzed the effect of Re, Fr, and St to the distribution of particle cluster volumns. It is important to note some limitation of our results: First, we have a relatively small training dataset (<100). This might result in issues relating to generalization and data imbalance. Second, we only have three levels for Re and Fr. There will be a serious issue of bad extrapolation if we use this model to predict tuples with Re and Fr outside of these three levels. Therefore, this model is only reliable with these three levels of Re and Fr.
 
-We believe that our model provides good prediction and on the probability distribution of particle cluster volumns, and interpretation on how Re, Fr, St affect the flows. We conclude that Turbulent flows have high St, high Re, high Fr; Laminar flows have low St, low Re, low Fr. Our results also reveal that the interaction between Re and Fr has significant effects on flows' motion. 
+We believe that our model provides good prediction and on the probability distribution of particle cluster volumns, and interpretation on how Re, Fr, St affect the flows. With high Re, low St, low Fr, The turbulent flows' particles distribute in a more normal, symmetric way with few outliers.
+When the flow is laminar, Re and Fr are both low, the probability distribution for particle cluster volumes is spread out, highly skewed, and is heavily influenced by outliers. When the flow is turbulent, the probability distribution for particle cluster volumes is fairly normal, symmetric, and with few outliers. 
 
-Moreover, we think that there might be other omitted variables that affect the flow motion. We are curious about the threshold where flows transitioning from laminar to turbulent. In future study, we hope to explore other potential predictor variables and the critical point that decides flow's type.
+The standard error of our results explode when all three parameters are high. In future study, we hope to address this issue and explore how to produce more accurate prediction.
 
 ## Citations
 
