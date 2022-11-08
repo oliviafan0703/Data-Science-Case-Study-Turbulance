@@ -41,7 +41,7 @@ set.seed(2000)
 
 ## Introduction
 
-The objective of this case study is to develop a predictive model to predict the distributions of particle clusters in turbulence from three predictors: fluid turbulence characterized by Reynold's number $Re$, gravitational acceleration $Fr$, and particle characteristics (size or density which is quantified by Stoke's number $St$). We also want to understand how does each of the three parameters affect the distribution of particle cluster volumns. 
+The objective of this case study is to develop a predictive model to predict the distributions of particle clusters in turbulence from three predictors: fluid turbulence characterized by Reynold's number $Re$, gravitational acceleration $Fr$, and particle characteristics (size or density which is quantified by Stoke's number $St$). We also want to understand how each of the three parameters affects the distribution of particle cluster volumns. 
 
 Developing an understanding of turbulence is important because the effects of turbulence are present in a wide variety of problems. For example, the distribution of ash in the atmosphere is controlled by atmospheric turbulence as well as the thermodynamics of clouds, radioactive properties, and the rate at which droplets grow to form rain, which has many implications for the environment and aviation. Turbulence also controls the population dynamics of planktons, which play an important role in the carbon cycle. On a more cosmological level, turbulence also controls the dispersion of magnetism and heat from supernova events and possibly star formation.
 
@@ -66,7 +66,7 @@ p3 <- ggplot(data = data_train, mapping = aes(x = Re)) +
 grid.arrange(p1, p2, p3, nrow = 1)
 ```
 
-From observing the data set and the histogram plots, we can see that there are some data transformation needed. First, Fr has Inf value, which can't be quantified, so Fr only has two values in the histogram. We have two options: 1.performing logit transformation on Fr to transform Inf to 1; 2.transforming Fr to categorical variables.
+From observing the data set and the histogram plots, we can see that there are some data transformation needed. First, Fr has Inf value, which can't be quantified, so Fr only has two values in the histogram. We have two options: 1) performing logit transformation on Fr to transform Inf to 1; 2) transforming Fr to categorical variables.
 
 We can do this because the physicist only need to predict Fr on these three levels, so we don't need to consider extrapolation. Second, Re only has three levels. We also decided to convert Re to categorical variables, because of the same reasons as Fr.
 
@@ -222,7 +222,7 @@ ridgedf <- data.frame(RidgeModel, RMSE) %>% kable()
 
 ### Log-Transformed Model (Final Model)
 
-We decided to log transform the second, third and fourth moment response variables in order to restrict the predictions of values to positive only, since the second, third and fourth moments cannnot be negative
+We decided to log transform the second, third and fourth moment response variables in order to restrict the predictions of values to positive only, since the second, third and fourth moments cannnot be negative.
 
 ```{r,echo=F}
 data_train<-data_train%>%
@@ -231,7 +231,7 @@ data_train<-data_train%>%
   mutate(log_C_moment_4=log(C_moment_4))
 ```
 
-Then we fitted linear regression model on the original first moment response variable, and linear regression model on the log-transformed response variables for second, third and fourth moments. All models have high rsquared (See appendix 1.1 for final model regression output).
+Then we fitted linear regression model on the original first moment response variable, and linear regression model on the log-transformed response variables for second, third and fourth moments. All models have high $R^2$ values (See appendix 1.1 for final model regression output).
 
 ```{r, echo=F}
 final_model_M1 <- lm(R_moment_1 ~ St+ Re_category+Fr_transformed+Fr_transformed*Re_category+St*Re_category, data = data_train)
@@ -260,6 +260,7 @@ $C\_moment\_4=\exp(0.475+0.335 \times St +2.102\times Re\_categoryLow+ 0.096\tim
 
 We performed model diagnostics on the generalized linear model, as discussed in Appendix 1.4.
 
+\newpage
 ## Results
 
 We made predictions on the hold-out set in data-test.csv, and generated a csv file containing the predictions for the first, second, third and fourth moments.
@@ -304,7 +305,7 @@ St (the Stokes number) is the ratio of the particle's momentum response time to 
 
 Fr (the Froud number) is the ratio of average flow velocity to the wave velocity in shallow water. So high Fr means fast rapid flow (turbulent), and low Fr means slow tranquil flow (laminar). In our result, Fr in general has a negative effects on the variance, but such negative effects decreases while Fr increases. In other words, higher Fr is associated with higher variance. Therefore, with low Fr, the particles distribute in a more normal, symmetric way with few outliers; with high Fr, the particles distribution has greater variance.
 
-The interaction between Re and Fr is significant in our results, so we can conclude that Re and Fr combining is very important in affecting particles' distribution motion, while the effects of St are less significant. When the flow is laminar, Re and Fr are both low, the probability distribution for particle cluster volumes is spread out, highly skewed, and is heavily influenced by outliers. When the flow is turbulent, the probability distribution for particle cluster volumes is fairly normal, symmetric, and with few outliers. 
+The interaction between Re and Fr is significant in our results, so we can conclude that Re and Fr combining is very important in affecting particles' distribution motion, while the effects of St are less significant. When the flow is laminar, Re and Fr are both low, the probability distribution for particle cluster volumes is spread out, highly skewed, and is heavily influenced by outliers. When the flow is turbulent, the probability distribution for particle cluster volumes is fairly normal, symmetric, and with few outliers. We suspect that in the laminar flows, the particle disturbances are more localized, so this results in higher variances, skewness, and kurtosis in the particle distributions. On the other hand, in the turbulent flows, the particles disturbances are more randomized, so the particle distribution is more normal. 
 
 From the SE table (Appendix 1.3), we can see that the 1st raw moment has very small standard error and low uncertainty. The uncertainty increases as moments increases--higher order moments generally have higher uncertainty than lower order moments. It is worth-noticing that SE is the highest when St, Fr, Re are all high. This indicates that our prediction is more reliable when the levels of three parameters vary. 
 
@@ -315,9 +316,7 @@ Since our response variables were highly linearly correlated, we came to the con
 In this study, we analyzed the effect of Re, Fr, and St to the distribution of particle cluster volumns. It is important to note some limitation of our results: First, we have a relatively small training dataset (<100). This might result in issues relating to generalization and data imbalance. Second, we only have three levels for Re and Fr. There will be a serious issue of bad extrapolation if we use this model to predict tuples with Re and Fr outside of these three levels. Therefore, this model is only reliable with these three levels of Re and Fr.
 
 We believe that our model provides good prediction and on the probability distribution of particle cluster volumns, and interpretation on how Re, Fr, St affect the flows. With high Re, low St, low Fr, The turbulent flows' particles distribute in a more normal, symmetric way with few outliers.
-When the flow is laminar, Re and Fr are both low, the probability distribution for particle cluster volumes is spread out, highly skewed, and is heavily influenced by outliers. When the flow is turbulent, the probability distribution for particle cluster volumes is fairly normal, symmetric, and with few outliers. 
-
-The standard error of our results explode when all three parameters are high. In future study, we hope to address this issue and explore how to produce more accurate prediction.
+When the flow is laminar, Re and Fr are both low, the probability distribution for particle cluster volumes is spread out, highly skewed, and is heavily influenced by outliers. When the flow is turbulent, the probability distribution for particle cluster volumes is fairly normal, symmetric, and with few outliers. The standard error of our results explode when the flow is turbulent (all three parameters are high), turbulent distributions are harder to predict. In future study, we hope to address this issue and explore how to produce more accurate prediction. 
 
 ## Citations
 
