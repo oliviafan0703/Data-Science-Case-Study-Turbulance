@@ -257,6 +257,9 @@ $C\_moment\_3=\exp(-2.474+0.315 \times St +2.874\times Re\_categoryLow+ 0.573\ti
 
 $C\_moment\_4=\exp(0.475+0.335 \times St +2.102\times Re\_categoryLow+ 0.096\times  Re\_categoryMedium-0.349 \times Fr\_categoryLow-0.097 \times Fr\_categoryMedium +19.153 \times Re\_categoryLow*Fr\_categoryLow+6.421 \times Re\_categoryMedium*Fr\_categoryLow+0.348 \times Re\_categoryLow*Fr\_categoryMedium+1.488 \times St*Re\_categoryLow+1.304 \times St*Re\_categoryMedium)$
 
+We performed model diagnostics on the generalized linear model, as discussed in Appendix 1.4.
+
+\newpage
 
 ## Results
 
@@ -304,7 +307,7 @@ Fr (the Froud number) is the ratio of average flow velocity to the wave velocity
 
 The interaction between Re and Fr is significant in our results, so we can conclude that Re and Fr combining is very important in affecting particles' distribution motion, while the effects of St are less significant.
 
-From the SE table (Appendix 1.4), we can see that the 1st raw moment has very small standard error and low uncertainty. The uncertainty increases as moments increases--higher order moments generally have higher uncertainty than lower order moments. It is worth-noticing that SE is the highest when St, Fr, Re are all high. This indicates that our prediction is more reliable when the levels of three parameters vary. 
+From the SE table (Appendix 1.3), we can see that the 1st raw moment has very small standard error and low uncertainty. The uncertainty increases as moments increases--higher order moments generally have higher uncertainty than lower order moments. It is worth-noticing that SE is the highest when St, Fr, Re are all high. This indicates that our prediction is more reliable when the levels of three parameters vary. 
 
 ## Conclusion
 
@@ -338,14 +341,28 @@ summary(final_model_M3)$coefficients %>% kable(digits = 3)
 summary(final_model_M4)$coefficients %>% kable(digits = 3)
 ```
 
-### 1.2
-
-2. The prediction output on the test data. 
+### 1.2 Prediction output on the test data
 ```{r}
 data_predicted_output %>% kable(digits = 5)
 ```
 
-### 1.3
+\newpage
+
+### 1.3 SE Table (Uncertainty in Prediction)
+```{r}
+SE_M1 <- predict(final_model_M1, data_test_transformed, se.fit = TRUE)$se.fit
+SE_M2 <- predict(final_model_M2, data_test_transformed, se.fit = TRUE)$se.fit
+SE_M3 <- predict(final_model_M3, data_test_transformed, se.fit = TRUE)$se.fit
+SE_M4 <- predict(final_model_M4, data_test_transformed, se.fit = TRUE)$se.fit
+
+se.table = data.frame(SE_M1, SE_M2, SE_M3, SE_M4)
+
+se.table%>%kable()
+```
+
+\newpage
+
+### 1.4
 ### Model Diagnostics
 
 ```{r, echo=F} 
@@ -358,25 +375,10 @@ plot(final_model_M4)
 
 We conducted model diagnostic on the final model from mainly four perspectives
 
-- Residuals vs Fitted: While 
-Used to check the linear relationship assumptions. A horizontal line, without distinct patterns is an indication for a linear relationship, what is good.
+- Residuals vs Fitted: M1 clearly demonstrates a horizontal line, with the residuals randomly scattered. For M2, M3, and M4 while the trace is not strictly a horizontal line, it is roughly horizontal with no egregiously distinct pattern of residual data points. Therefore, the linear relationship assumptions hold.
 
-- Normal Q-Q. Used to examine whether the residuals are normally distributed. It’s good if residuals points follow the straight dashed line.
+- Normal Q-Q: For M2, M3, and M4, the residual points follow the straight dashed line, with some slight deviations towards the lower theoretical quantiles. Therefore, the residuals are normally distributed. For M1, however, the residual points follow a straight line for the residuals in the middle quantiles, but deviate drastically towards the lower and upper tails. 
 
-- Scale-Location (or Spread-Location). Used to check the homogeneity of variance of the residuals (homoscedasticity). Horizontal line with equally spread points is a good indication of homoscedasticity. This is not the case in our example, where we have a heteroscedasticity problem.
+- Scale-Location: For M1, the points are equally spread which is a good indication of homoscedasticity. For M2, M3, and M4, however, some of the points are lumped together, while they are still scattered on a large scale. However, the red traceline does not seem horizontal which indicates a potential heteroscedasticity problem as the limitation of this model.
 
-- Residuals vs Leverage. Used to identify influential cases, that is extreme values that might influence the regression results when included or excluded from the analysis. This plot will be described further in the next sections.
-
-### 1.4
-### SE Table
-```{r}
-SE_M1 <- predict(final_model_M1, data_test_transformed, se.fit = TRUE)$se.fit
-SE_M2 <- predict(final_model_M2, data_test_transformed, se.fit = TRUE)$se.fit
-SE_M3 <- predict(final_model_M3, data_test_transformed, se.fit = TRUE)$se.fit
-SE_M4 <- predict(final_model_M4, data_test_transformed, se.fit = TRUE)$se.fit
-
-se.table = data.frame(SE_M1, SE_M2, SE_M3, SE_M4)
-
-se.table
-```
-
+- Residuals vs Leverage: While there do not seem to be influential points according to Cook's distance. There do seem to be outliers with high leverage for each of the four moments M1, M2, M3 and M4 which as future work, we could investigate and conduct analysis on the underlying cause.

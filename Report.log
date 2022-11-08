@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021) (preloaded format=pdflatex 2021.10.7)  7 NOV 2022 02:43
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021) (preloaded format=pdflatex 2021.10.7)  7 NOV 2022 20:20
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -669,72 +669,72 @@ File: ts1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
 [2 <./Report_files/figure-latex/unnamed-chunk-4-1.pdf>]
-Overfull \vbox (118.54268pt too high) has occurred while \output is active []
+Overfull \vbox (48.95267pt too high) has occurred while \output is active []
 
 [3]
-<Report_files/figure-latex/unnamed-chunk-28-1.pdf, id=59, 211.79124pt x 134.502
+<Report_files/figure-latex/unnamed-chunk-28-1.pdf, id=57, 211.79124pt x 134.502
 5pt>
 File: Report_files/figure-latex/unnamed-chunk-28-1.pdf Graphic file (type pdf)
 <use Report_files/figure-latex/unnamed-chunk-28-1.pdf>
 Package pdftex.def Info: Report_files/figure-latex/unnamed-chunk-28-1.pdf  used
- on input line 301.
+ on input line 306.
 (pdftex.def)             Requested size: 211.79395pt x 134.5042pt.
-<Report_files/figure-latex/unnamed-chunk-28-2.pdf, id=60, 211.79124pt x 132.495
+<Report_files/figure-latex/unnamed-chunk-28-2.pdf, id=58, 211.79124pt x 132.495
 pt>
 File: Report_files/figure-latex/unnamed-chunk-28-2.pdf Graphic file (type pdf)
 <use Report_files/figure-latex/unnamed-chunk-28-2.pdf>
 Package pdftex.def Info: Report_files/figure-latex/unnamed-chunk-28-2.pdf  used
- on input line 302.
+ on input line 307.
 (pdftex.def)             Requested size: 211.79718pt x 132.49869pt.
 [4 <./Report_files/figure-latex/unnamed-chunk-28-1.pdf> <./Report_files/figure-
-latex/unnamed-chunk-28-2.pdf>] [5] [6]
-<Report_files/figure-latex/unnamed-chunk-31-1.pdf, id=105, 467.7475pt x 291.087
+latex/unnamed-chunk-28-2.pdf>] [5] [6] [7] [8]
+<Report_files/figure-latex/unnamed-chunk-32-1.pdf, id=120, 467.7475pt x 291.087
 5pt>
-File: Report_files/figure-latex/unnamed-chunk-31-1.pdf Graphic file (type pdf)
-<use Report_files/figure-latex/unnamed-chunk-31-1.pdf>
-Package pdftex.def Info: Report_files/figure-latex/unnamed-chunk-31-1.pdf  used
- on input line 541.
+File: Report_files/figure-latex/unnamed-chunk-32-1.pdf Graphic file (type pdf)
+<use Report_files/figure-latex/unnamed-chunk-32-1.pdf>
+Package pdftex.def Info: Report_files/figure-latex/unnamed-chunk-32-1.pdf  used
+ on input line 585.
 (pdftex.def)             Requested size: 467.76775pt x 291.1001pt.
-<Report_files/figure-latex/unnamed-chunk-31-2.pdf, id=106, 467.7475pt x 291.087
+<Report_files/figure-latex/unnamed-chunk-32-2.pdf, id=121, 467.7475pt x 291.087
 5pt>
-File: Report_files/figure-latex/unnamed-chunk-31-2.pdf Graphic file (type pdf)
-<use Report_files/figure-latex/unnamed-chunk-31-2.pdf>
-Package pdftex.def Info: Report_files/figure-latex/unnamed-chunk-31-2.pdf  used
- on input line 542.
+File: Report_files/figure-latex/unnamed-chunk-32-2.pdf Graphic file (type pdf)
+<use Report_files/figure-latex/unnamed-chunk-32-2.pdf>
+Package pdftex.def Info: Report_files/figure-latex/unnamed-chunk-32-2.pdf  used
+ on input line 586.
 (pdftex.def)             Requested size: 467.76775pt x 291.1001pt.
 
-Underfull \hbox (badness 10000) in paragraph at lines 541--543
+Underfull \hbox (badness 10000) in paragraph at lines 585--587
 []
  []
 
-[7] [8 <./Report_files/figure-latex/unnamed-chunk-31-1.pdf> <./Report_files/fig
-ure-latex/unnamed-chunk-31-2.pdf>] [9] (./Report.aux) ) 
+[9 <./Report_files/figure-latex/unnamed-chunk-32-1.pdf> <./Report_files/figure-
+latex/unnamed-chunk-32-2.pdf>] [10] (./Report.aux) ) 
 Here is how much of TeX's memory you used:
- 14311 strings out of 478994
- 212938 string characters out of 5858184
- 572333 words of memory out of 5000000
- 31351 multiletter control sequences out of 15000+600000
- 454032 words of font info for 123 fonts, out of 8000000 for 9000
+ 14323 strings out of 478994
+ 213156 string characters out of 5858184
+ 572500 words of memory out of 5000000
+ 31354 multiletter control sequences out of 15000+600000
+ 454281 words of font info for 126 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 85i,11n,88p,511b,450s stack positions out of 5000i,500n,10000p,200000b,80000s
-{/usr/local/texlive/2021
-/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc}{/usr/local/texlive/2021/texmf-dis
-t/fonts/enc/dvips/lm/lm-ts1.enc}{/usr/local/texlive/2021/texmf-dist/fonts/enc/d
-vips/lm/lm-mathit.enc}{/usr/local/texlive/2021/texmf-dist/fonts/enc/dvips/lm/lm
--rm.enc}{/usr/local/texlive/2021/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc}</usr/
-local/texlive/2021/texmf-dist/fonts/type1/public/lm/lmbx10.pfb></usr/local/texl
-ive/2021/texmf-dist/fonts/type1/public/lm/lmbx12.pfb></usr/local/texlive/2021/t
-exmf-dist/fonts/type1/public/lm/lmmi10.pfb></usr/local/texlive/2021/texmf-dist/
-fonts/type1/public/lm/lmmi7.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1
-/public/lm/lmr10.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/lm/
-lmr12.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/lm/lmr17.pfb><
-/usr/local/texlive/2021/texmf-dist/fonts/type1/public/lm/lmsy10.pfb></usr/local
-/texlive/2021/texmf-dist/fonts/type1/public/lm/lmtt10.pfb></usr/local/texlive/2
-021/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on Report.pdf (9 pages, 344888 bytes).
+ 85i,11n,88p,567b,450s stack positions out of 5000i,500n,10000p,200000b,80000s
+{/usr/local/texlive/2021/te
+xmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc}{/usr/local/texlive/2021/texmf-dist/f
+onts/enc/dvips/lm/lm-ts1.enc}{/usr/local/texlive/2021/texmf-dist/fonts/enc/dvip
+s/lm/lm-mathit.enc}{/usr/local/texlive/2021/texmf-dist/fonts/enc/dvips/lm/lm-rm
+.enc}{/usr/local/texlive/2021/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc}</usr/loc
+al/texlive/2021/texmf-dist/fonts/type1/public/lm/lmbx10.pfb></usr/local/texlive
+/2021/texmf-dist/fonts/type1/public/lm/lmbx12.pfb></usr/local/texlive/2021/texm
+f-dist/fonts/type1/public/lm/lmmi10.pfb></usr/local/texlive/2021/texmf-dist/fon
+ts/type1/public/lm/lmmi7.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/pu
+blic/lm/lmr10.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/lm/lmr
+12.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/lm/lmr17.pfb></us
+r/local/texlive/2021/texmf-dist/fonts/type1/public/lm/lmsy10.pfb></usr/local/te
+xlive/2021/texmf-dist/fonts/type1/public/lm/lmtt10.pfb></usr/local/texlive/2021
+/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
+Output written on Report.pdf (10 pages, 348004 bytes).
 PDF statistics:
- 235 PDF objects out of 1000 (max. 8388607)
- 194 compressed objects within 2 object streams
- 44 named destinations out of 1000 (max. 500000)
- 28807 words of extra memory for PDF output out of 29859 (max. 10000000)
+ 245 PDF objects out of 1000 (max. 8388607)
+ 202 compressed objects within 3 object streams
+ 47 named destinations out of 1000 (max. 500000)
+ 28815 words of extra memory for PDF output out of 29859 (max. 10000000)
 
