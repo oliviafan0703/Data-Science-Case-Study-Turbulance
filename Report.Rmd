@@ -106,7 +106,6 @@ $\widehat{2nd \ Central \ Moment} = \hat{St}+ \widehat{Re_{category}} +\widehat{
 model <- lm(C_moment_2 ~ St + Fr_category + Re_category, data = data_train)
 summ(model, vifs = TRUE)
 ```
-
 From the result, we can see that multicollinearity is not a issue here. We also find that low Fr and low Re have significant effects on variance. Since this basic model has very low Rsquared (0.45), so we decided to increase the model complexity by adding interaction terms, especially exploring Fr and Re. 
 
 Since the 1st central moment is always 0, we need to predict 1st raw moment directly.
@@ -288,22 +287,25 @@ write.csv(data_predicted_output,"data-predict.csv", row.names = FALSE)
 
 Since the 1st central moment is always 0, we did not build a model for it. Instead, we directly predicts the 1st raw moment. There is a distinction between the three parameters' effects on mean and other three moments. When predicting the 1st raw moment, we did not transform Fr into categorical variables, and the interaction between Re and Fr has a significant negative, though weak, effects on the value of the mean.
 
-The effects of three parameters are similar over other three central moments. So we'll take the 2nd central moment (variance) as a representative example. Some major observations from the results: First, Re is expected to have a negative relationship with the variance. The lower the Re, the larger the 2nd central moment. Second, St is expected to have a positive relationship with the 2nd central moment. Third, while Fr has a negative relationship with the variance, such negative effect is small when Fr number is high, and lower Fr number has stronger negative effects on the variance. It is worth-noticing that Fr does not have a significant main effect on the variance, given its high p-value. However, Fr's effects become significant in the interaction terms. 4.The interaction terms between Re and Fr has very strong positive effects on the 2nd central moment.
+The effects of three parameters are similar over other three central moments. Some major observations from the results: First, Re is expected to have a negative relationship with the variance, skewness, and kurtosis. The lower the Re, the greater the 2nd, 3rd, and 4th central moments. Second, St is expected to have a positive relationship with the 2nd, 3rd, and 4th central moments. Third, while Fr has a negative relationship with the moments, such negative effect decreases while Fr increases, so lower Fr is associated with high variance, skewness, and kurtosis. It is worth-noticing that Fr independently does not have a significant main effect on the moments, given its high p-value. However, Fr's effects become significant in the interaction terms. 4.The interaction terms between Re and Fr has very strong positive effects on the moments.
 
 ```{r, fig.width=3, fig.height=2}
 plot_model(final_model_M2, type = "pred", terms = c("Fr_category", "Re_category"))
 plot_model(final_model_M2, type = "pred", terms = c("St", "Re_category"))
 ```
 
-Specifically, based on our modeling results, the two most significant terms are Re and the interaction between Re and Fr. Turbulence with Low Re is expected to have 3.82 unit higher variance than turbulence with High Re on average holding all else constant. The interaction between Low Re and Low Fr has strong positive effects on the variance. If the turbulence has low re and low fr, it is expected to have 13.06 unit higher variance than turbulence with Low Re and High Fr, holding all else constant. This result aligns with our prediction outcome--with 90 Re and 0.052 Fr, the distribution of particle cluster has incredibly high (419.49) variance.
+Specifically, based on our modeling results, the two most significant terms are Re and the interaction between Re and Fr. Taking the 2nd central moment as an example, turbulence with low Re is expected to have 3.82 unit higher variance in particle distribution than that of turbulence with high Re on average holding all else constant. The interaction between low Re and low Fr has strong positive effects on the variance of particle distribution. If the turbulence has low re and low fr, its particle distribution is expected to have 13.06 unit higher variance than turbulence with low Re and high Fr, holding all else constant. This result aligns with our prediction outcome--with 90 Re and 0.052 Fr, the distribution of particle cluster has incredibly high variance (419.49), high skewness(2.194687e+06), and high kurtosis(1.195146e+10). 
 
-We can now interpret the three parameters' effect in the physical context. Since Re (the Reynolds number) quantifies fluid turbulence, we can induce that the particle cluster volume distribution in turbulence has low uncertainty when Re is low. We can conclude that Laminar flows have low Re number, because the particle distribution is more orderly, regular, predictable. On the other hand, Turbulent flows have high Re number, because high Re is associated with high variance, thus the flows are more random and irregular. 
+We can now interpret the three parameters' effect in the physical context. Since Re (the Reynolds number) quantifies fluid turbulence, the higher the Re, the more turbulent the flow. We can conclude that the particle cluster volume distribution has lower variance, skewness, and kurtosis when Re is high, which means that the turbulent flows' particles distribute in a more normal, symmetric way with few outliers.
 
-St (the Stokes number) is the ratio of the particle's momentum response time to the flow-field time scale. By definition, a larger Stokes number represents a larger or heavier particle. Our results demonstrate that particles with high St have greater impact on the turbulence. For small St, the particles will mostly follow the fluid motion, thus more predictable; for high St, the carrier fluid will have very limited influence on the particle motion, thus more unpredictable. We can conclude that Turbulent flows have high St, and Laminar flows have low St.
+St (the Stokes number) is the ratio of the particle's momentum response time to the flow-field time scale. By definition, a larger Stokes number represents a larger or heavier particle. Turbulent flows have high St, and Laminar flows have low St. Our results demonstrate that particle distributions with lower St numbers have smaller variance, skewness, and kurtosis. So with small St, the particles will mostly distribute normally and symmetrically and with few outliers. 
 
-Fr (the Froud number) is the ratio of average flow velocity to the wave velocity in shallow water. So high Fr means fast rapid flow, and low Fr means slow tranquil flow. In our result, Fr in general has a negative effects on the variance, but such negative effects decreases while Fr increases. In other words, flows with high Fr is more unpredictable, and flows with low Fr is more orderly. Therefore, we can conclude that Turbulent flow has high velocity, thus high Fr; Laminar flow has low velocity, thus low Fr.
+Fr (the Froud number) is the ratio of average flow velocity to the wave velocity in shallow water. So high Fr means fast rapid flow (turbulent), and low Fr means slow tranquil flow (laminar). In our result, Fr in general has a negative effects on the variance, but such negative effects decreases while Fr increases. In other words, higher Fr is associated with higher variance. Therefore, with low Fr, the particles distribute in a more normal, symmetric way with few outliers; with high Fr, the particles distribution has greater variance.
 
-The interaction between Re and Fr is significant in our results, so we can conclude that Re and Fr combining in very important in affecting flow's motion, while the St is less significant.
+The interaction between Re and Fr is significant in our results, so we can conclude that Re and Fr combining is very important in affecting particles' distribution motion, while the effects of St are less significant.
+
+From the SE columns, we can see that the 1st raw moment has very small standard error and low uncertainty. The uncertainty increases as moments increases--higher order moments generally have higher uncertainty than lower order moments. This means that our prediction on the mean is the most accurate, and prediction on kurtosis is less reliable. It is worth-noticing that SE are the highest when St, Fr, Re are all high.
+
 
 ## Conclusion
 
@@ -313,7 +315,7 @@ In this study, we analyzed the effect of Re, Fr, and St to the distribution of p
 
 We believe that our model provides good prediction and on the probability distribution of particle cluster volumns, and interpretation on how Re, Fr, St affect the flows. We conclude that Turbulent flows have high St, high Re, high Fr; Laminar flows have low St, low Re, low Fr. Our results also reveal that the interaction between Re and Fr has significant effects on flows' motion. 
 
-Moreover, we think that there might be other omitted variables that affect the flow motion. We are curious about the threshold where flows transitioning from laminar to turbulent. In future study, we hope to explore other potential predictor variables and the critical point that decides flow's type. 
+Moreover, we think that there might be other omitted variables that affect the flow motion. We are curious about the threshold where flows transitioning from laminar to turbulent. In future study, we hope to explore other potential predictor variables and the critical point that decides flow's type.
 
 ## Citations
 
@@ -345,7 +347,7 @@ data_predicted_output %>% kable(digits = 5)
 ```
 
 ### 1.3
-### Model Diagnostics and Limitations
+### Model Diagnostics
 
 ```{r, echo=F} 
 par(mfrow = c(2, 4))
@@ -357,10 +359,25 @@ plot(final_model_M4)
 
 We conducted model diagnostic on the final model from mainly four perspectives
 
-- Residuals vs Fitted: M1 clearly demonstrates a horizontal line, with the residuals randomly scattered. For M2, M3, and M4 while the trace is not strictly a horizontal line, it is roughly horizontal with no egregiously distinct pattern of residual data points. Therefore, the linear relationship assumptions hold.
+- Residuals vs Fitted: While 
+Used to check the linear relationship assumptions. A horizontal line, without distinct patterns is an indication for a linear relationship, what is good.
 
-- Normal Q-Q: For M2, M3, and M4, the residual points follow the straight dashed line, with some slight deviations towards the lower theoretical quantiles. Therefore, the residuals are normally distributed. For M1, however, the residual points follow a straight line for the residuals in the middle quantiles, but deviate drastically towards the lower and upper tails. 
+- Normal Q-Q. Used to examine whether the residuals are normally distributed. It’s good if residuals points follow the straight dashed line.
 
-- Scale-Location: For M1, the points are equally spread which is a good indication of homoscedasticity. For M2, M3, and M4, however, some of the points are lumped together, while they are still scattered on a large scale. However, the red traceline does not seem horizontal which indicates a potential heteroscedasticity problem as the limitation of this model.
+- Scale-Location (or Spread-Location). Used to check the homogeneity of variance of the residuals (homoscedasticity). Horizontal line with equally spread points is a good indication of homoscedasticity. This is not the case in our example, where we have a heteroscedasticity problem.
 
-- Residuals vs Leverage: While there do not seem to be influential points according to Cook's distance. There do seem to be outliers with high leverage for each of the four moments M1, M2, M3 and M4 which as future work, we could investigate and conduct analysis on the underlying cause.
+- Residuals vs Leverage. Used to identify influential cases, that is extreme values that might influence the regression results when included or excluded from the analysis. This plot will be described further in the next sections.
+
+### 1.4
+### SE Table
+```{r}
+SE_M1 <- predict(final_model_M1, data_test_transformed, se.fit = TRUE)$se.fit
+SE_M2 <- predict(final_model_M2, data_test_transformed, se.fit = TRUE)$se.fit
+SE_M3 <- predict(final_model_M3, data_test_transformed, se.fit = TRUE)$se.fit
+SE_M4 <- predict(final_model_M4, data_test_transformed, se.fit = TRUE)$se.fit
+
+se.table = data.frame(SE_M1, SE_M2, SE_M3, SE_M4)
+
+se.table
+```
+
