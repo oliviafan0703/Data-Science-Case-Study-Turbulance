@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021) (preloaded format=pdflatex 2021.10.7)  7 NOV 2022 21:46
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021) (preloaded format=pdflatex 2021.10.7)  7 NOV 2022 21:50
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -489,32 +489,32 @@ File: l3backend-pdftex.def 2021-03-18 L3 backend support: PDF output (pdfTeX)
 ) (./Report.aux)
 \openout1 = `Report.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 93.
-LaTeX Font Info:    ... okay on input line 93.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 93.
-LaTeX Font Info:    ... okay on input line 93.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 93.
-LaTeX Font Info:    ... okay on input line 93.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 93.
-LaTeX Font Info:    ... okay on input line 93.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 93.
-LaTeX Font Info:    ... okay on input line 93.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 93.
-LaTeX Font Info:    ... okay on input line 93.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 93.
-LaTeX Font Info:    ... okay on input line 93.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 93.
-LaTeX Font Info:    ... okay on input line 93.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 93.
-LaTeX Font Info:    ... okay on input line 93.
-LaTeX Info: Redefining \microtypecontext on input line 93.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 94.
+LaTeX Font Info:    ... okay on input line 94.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 94.
+LaTeX Font Info:    ... okay on input line 94.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 94.
+LaTeX Font Info:    ... okay on input line 94.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 94.
+LaTeX Font Info:    ... okay on input line 94.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 94.
+LaTeX Font Info:    ... okay on input line 94.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 94.
+LaTeX Font Info:    ... okay on input line 94.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 94.
+LaTeX Font Info:    ... okay on input line 94.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 94.
+LaTeX Font Info:    ... okay on input line 94.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 94.
+LaTeX Font Info:    ... okay on input line 94.
+LaTeX Info: Redefining \microtypecontext on input line 94.
 Package microtype Info: Generating PDF output.
 Package microtype Info: Character protrusion enabled (level 2).
 Package microtype Info: Using protrusion set `basicmath'.
 Package microtype Info: Automatic font expansion enabled (level 2),
 (microtype)             stretch: 20, shrink: 20, step: 1, non-selected.
 Package microtype Info: Using default expansion set `alltext-nott'.
-LaTeX Info: Redefining \showhyphens on input line 93.
+LaTeX Info: Redefining \showhyphens on input line 94.
 Package microtype Info: No adjustment of tracking.
 Package microtype Info: No adjustment of interword spacing.
 Package microtype Info: No adjustment of character kerning.
@@ -542,7 +542,7 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
-Package hyperref Info: Link coloring OFF on input line 93.
+Package hyperref Info: Link coloring OFF on input line 94.
 (/usr/local/texlive/2021/texmf-dist/tex/latex/hyperref/nameref.sty
 Package: nameref 2021-04-02 v2.47 Cross-referencing by name of section
 (/usr/local/texlive/2021/texmf-dist/tex/latex/refcount/refcount.sty
@@ -554,9 +554,9 @@ Package: gettitlestring 2019/12/15 v1.6 Cleanup title references (HO)
 )
 \c@section@level=\count313
 )
-LaTeX Info: Redefining \ref on input line 93.
-LaTeX Info: Redefining \pageref on input line 93.
-LaTeX Info: Redefining \nameref on input line 93.
+LaTeX Info: Redefining \ref on input line 94.
+LaTeX Info: Redefining \pageref on input line 94.
+LaTeX Info: Redefining \nameref on input line 94.
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
 *geometry* verbose mode - [ preamble ] result:
@@ -592,39 +592,39 @@ LaTeX Info: Redefining \nameref on input line 93.
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
 LaTeX Font Info:    Trying to load font information for OT1+lmr on input line 9
-5.
+6.
 (/usr/local/texlive/2021/texmf-dist/tex/latex/lm/ot1lmr.fd
 File: ot1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    Trying to load font information for OML+lmm on input line 9
-5.
+6.
 (/usr/local/texlive/2021/texmf-dist/tex/latex/lm/omllmm.fd
 File: omllmm.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    Trying to load font information for OMS+lmsy on input line 
-95.
+96.
 (/usr/local/texlive/2021/texmf-dist/tex/latex/lm/omslmsy.fd
 File: omslmsy.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    Trying to load font information for OMX+lmex on input line 
-95.
+96.
 (/usr/local/texlive/2021/texmf-dist/tex/latex/lm/omxlmex.fd
 File: omxlmex.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <12> on input line 95.
+(Font)              <12> on input line 96.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <8> on input line 95.
+(Font)              <8> on input line 96.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <6> on input line 95.
-LaTeX Font Info:    Trying to load font information for U+msa on input line 95.
+(Font)              <6> on input line 96.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 96.
 
 (/usr/local/texlive/2021/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 ) (/usr/local/texlive/2021/texmf-dist/tex/latex/microtype/mt-msa.cfg
 File: mt-msa.cfg 2006/02/04 v1.1 microtype config. file: AMS symbols (a) (RS)
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 95.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 96.
 
 (/usr/local/texlive/2021/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
@@ -632,18 +632,18 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 File: mt-msb.cfg 2005/06/01 v1.0 microtype config. file: AMS symbols (b) (RS)
 )
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <10> on input line 101.
+(Font)              <10> on input line 102.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <7> on input line 101.
+(Font)              <7> on input line 102.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <5> on input line 101.
-<Report_files/figure-latex/unnamed-chunk-3-1.pdf, id=4, 426.59375pt x 204.765pt
+(Font)              <5> on input line 102.
+<Report_files/figure-latex/unnamed-chunk-3-1.pdf, id=4, 426.59375pt x 132.495pt
 >
 File: Report_files/figure-latex/unnamed-chunk-3-1.pdf Graphic file (type pdf)
 <use Report_files/figure-latex/unnamed-chunk-3-1.pdf>
 Package pdftex.def Info: Report_files/figure-latex/unnamed-chunk-3-1.pdf  used 
-on input line 135.
-(pdftex.def)             Requested size: 426.61873pt x 204.77698pt.
+on input line 136.
+(pdftex.def)             Requested size: 426.61873pt x 132.50273pt.
 [1
 
 {/usr/local/texlive/2021/texmf-var/fonts/map/pdftex/updmap/pdftex.map} <./Repor
@@ -653,74 +653,71 @@ t>
 File: Report_files/figure-latex/unnamed-chunk-4-1.pdf Graphic file (type pdf)
 <use Report_files/figure-latex/unnamed-chunk-4-1.pdf>
 Package pdftex.def Info: Report_files/figure-latex/unnamed-chunk-4-1.pdf  used 
-on input line 150.
+on input line 151.
 (pdftex.def)             Requested size: 238.8919pt x 238.8919pt.
 LaTeX Font Info:    Trying to load font information for T1+lmtt on input line 1
-58.
+59.
 (/usr/local/texlive/2021/texmf-dist/tex/latex/lm/t1lmtt.fd
 File: t1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 1
-87.
+88.
 (/usr/local/texlive/2021/texmf-dist/tex/latex/lm/ts1lmr.fd
 File: ts1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
-[2 <./Report_files/figure-latex/unnamed-chunk-4-1.pdf>]
-Overfull \vbox (48.95267pt too high) has occurred while \output is active []
-
-[3]
-<Report_files/figure-latex/unnamed-chunk-28-1.pdf, id=57, 211.79124pt x 134.502
+[2 <./Report_files/figure-latex/unnamed-chunk-4-1.pdf>] [3]
+<Report_files/figure-latex/unnamed-chunk-28-1.pdf, id=58, 211.79124pt x 134.502
 5pt>
 File: Report_files/figure-latex/unnamed-chunk-28-1.pdf Graphic file (type pdf)
 <use Report_files/figure-latex/unnamed-chunk-28-1.pdf>
 Package pdftex.def Info: Report_files/figure-latex/unnamed-chunk-28-1.pdf  used
- on input line 306.
+ on input line 308.
 (pdftex.def)             Requested size: 211.79395pt x 134.5042pt.
-<Report_files/figure-latex/unnamed-chunk-28-2.pdf, id=58, 211.79124pt x 132.495
+<Report_files/figure-latex/unnamed-chunk-28-2.pdf, id=59, 211.79124pt x 132.495
 pt>
 File: Report_files/figure-latex/unnamed-chunk-28-2.pdf Graphic file (type pdf)
 <use Report_files/figure-latex/unnamed-chunk-28-2.pdf>
 Package pdftex.def Info: Report_files/figure-latex/unnamed-chunk-28-2.pdf  used
- on input line 307.
+ on input line 309.
 (pdftex.def)             Requested size: 211.79718pt x 132.49869pt.
 [4 <./Report_files/figure-latex/unnamed-chunk-28-1.pdf> <./Report_files/figure-
 latex/unnamed-chunk-28-2.pdf>] [5] [6] [7] [8]
-<Report_files/figure-latex/unnamed-chunk-32-1.pdf, id=120, 467.7475pt x 291.087
+<Report_files/figure-latex/unnamed-chunk-32-1.pdf, id=121, 467.7475pt x 291.087
 5pt>
 File: Report_files/figure-latex/unnamed-chunk-32-1.pdf Graphic file (type pdf)
 <use Report_files/figure-latex/unnamed-chunk-32-1.pdf>
 Package pdftex.def Info: Report_files/figure-latex/unnamed-chunk-32-1.pdf  used
- on input line 585.
+ on input line 592.
 (pdftex.def)             Requested size: 467.76775pt x 291.1001pt.
-<Report_files/figure-latex/unnamed-chunk-32-2.pdf, id=121, 467.7475pt x 291.087
+<Report_files/figure-latex/unnamed-chunk-32-2.pdf, id=122, 467.7475pt x 291.087
 5pt>
 File: Report_files/figure-latex/unnamed-chunk-32-2.pdf Graphic file (type pdf)
 <use Report_files/figure-latex/unnamed-chunk-32-2.pdf>
 Package pdftex.def Info: Report_files/figure-latex/unnamed-chunk-32-2.pdf  used
- on input line 586.
+ on input line 593.
 (pdftex.def)             Requested size: 467.76775pt x 291.1001pt.
 
-Underfull \hbox (badness 10000) in paragraph at lines 585--587
+Underfull \hbox (badness 10000) in paragraph at lines 592--594
 []
  []
 
 [9 <./Report_files/figure-latex/unnamed-chunk-32-1.pdf> <./Report_files/figure-
 latex/unnamed-chunk-32-2.pdf>] [10] (./Report.aux) ) 
 Here is how much of TeX's memory you used:
- 14323 strings out of 478994
- 213156 string characters out of 5858184
- 572500 words of memory out of 5000000
+ 14319 strings out of 478994
+ 213116 string characters out of 5858184
+ 572798 words of memory out of 5000000
  31354 multiletter control sequences out of 15000+600000
- 454281 words of font info for 126 fonts, out of 8000000 for 9000
+ 454115 words of font info for 124 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  85i,11n,88p,567b,450s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/local/texlive/2021/te
 xmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc}{/usr/local/texlive/2021/texmf-dist/f
-onts/enc/dvips/lm/lm-ts1.enc}{/usr/local/texlive/2021/texmf-dist/fonts/enc/dvip
-s/lm/lm-mathit.enc}{/usr/local/texlive/2021/texmf-dist/fonts/enc/dvips/lm/lm-rm
+onts/enc/dvips/lm/lm-rm.enc}{/usr/local/texlive/2021/texmf-dist/fonts/enc/dvips
+/lm/lm-ts1.enc}{/usr/local/texlive/2021/texmf-dist/fonts/enc/dvips/lm/lm-mathit
 .enc}{/usr/local/texlive/2021/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc}</usr/loc
 al/texlive/2021/texmf-dist/fonts/type1/public/lm/lmbx10.pfb></usr/local/texlive
 /2021/texmf-dist/fonts/type1/public/lm/lmbx12.pfb></usr/local/texlive/2021/texm
@@ -728,13 +725,14 @@ f-dist/fonts/type1/public/lm/lmmi10.pfb></usr/local/texlive/2021/texmf-dist/fon
 ts/type1/public/lm/lmmi7.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/pu
 blic/lm/lmr10.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/lm/lmr
 12.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/lm/lmr17.pfb></us
-r/local/texlive/2021/texmf-dist/fonts/type1/public/lm/lmsy10.pfb></usr/local/te
-xlive/2021/texmf-dist/fonts/type1/public/lm/lmtt10.pfb></usr/local/texlive/2021
-/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on Report.pdf (10 pages, 347984 bytes).
+r/local/texlive/2021/texmf-dist/fonts/type1/public/lm/lmr7.pfb></usr/local/texl
+ive/2021/texmf-dist/fonts/type1/public/lm/lmsy10.pfb></usr/local/texlive/2021/t
+exmf-dist/fonts/type1/public/lm/lmtt10.pfb></usr/local/texlive/2021/texmf-dist/
+fonts/type1/public/amsfonts/symbols/msbm10.pfb>
+Output written on Report.pdf (10 pages, 366256 bytes).
 PDF statistics:
- 245 PDF objects out of 1000 (max. 8388607)
- 202 compressed objects within 3 object streams
+ 249 PDF objects out of 1000 (max. 8388607)
+ 205 compressed objects within 3 object streams
  47 named destinations out of 1000 (max. 500000)
  28815 words of extra memory for PDF output out of 29859 (max. 10000000)
 

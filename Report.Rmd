@@ -66,7 +66,7 @@ p3 <- ggplot(data = data_train, mapping = aes(x = Re)) +
 grid.arrange(p1, p2, p3, nrow = 1)
 ```
 
-From observing the data set and the histogram plots, we can see that there are some data transformation needed. First, Fr has Inf value, which can't be quantified, so Fr only has two values in the histogram. We have two options: 1.performing logit transformation on Fr to transform Inf to 1; 2.transforming Fr to categorical variables.
+From observing the data set and the histogram plots, we can see that there are some data transformation needed. First, Fr has Inf value, which can't be quantified, so Fr only has two values in the histogram. We have two options: 1) performing logit transformation on Fr to transform Inf to 1; 2) transforming Fr to categorical variables.
 
 We can do this because the physicist only need to predict Fr on these three levels, so we don't need to consider extrapolation. Second, Re only has three levels. We also decided to convert Re to categorical variables, because of the same reasons as Fr.
 
@@ -222,7 +222,7 @@ ridgedf <- data.frame(RidgeModel, RMSE) %>% kable()
 
 ### Log-Transformed Model (Final Model)
 
-We decided to log transform the second, third and fourth moment response variables in order to restrict the predictions of values to positive only, since the second, third and fourth moments cannnot be negative
+We decided to log transform the second, third and fourth moment response variables in order to restrict the predictions of values to positive only, since the second, third and fourth moments cannnot be negative.
 
 ```{r,echo=F}
 data_train<-data_train%>%
@@ -231,7 +231,7 @@ data_train<-data_train%>%
   mutate(log_C_moment_4=log(C_moment_4))
 ```
 
-Then we fitted linear regression model on the original first moment response variable, and linear regression model on the log-transformed response variables for second, third and fourth moments. All models have high rsquared (See appendix 1.1 for final model regression output).
+Then we fitted linear regression model on the original first moment response variable, and linear regression model on the log-transformed response variables for second, third and fourth moments. All models have high $R^2$ values (See appendix 1.1 for final model regression output).
 
 ```{r, echo=F}
 final_model_M1 <- lm(R_moment_1 ~ St+ Re_category+Fr_transformed+Fr_transformed*Re_category+St*Re_category, data = data_train)
@@ -260,6 +260,7 @@ $C\_moment\_4=\exp(0.475+0.335 \times St +2.102\times Re\_categoryLow+ 0.096\tim
 
 We performed model diagnostics on the generalized linear model, as discussed in Appendix 1.4.
 
+\newpage
 ## Results
 
 We made predictions on the hold-out set in data-test.csv, and generated a csv file containing the predictions for the first, second, third and fourth moments.
